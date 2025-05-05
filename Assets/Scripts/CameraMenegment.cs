@@ -2,24 +2,28 @@ using UnityEngine;
 
 public class CameraFollow : MonoBehaviour
 {
-    public Transform player; // Ссылка на трансформ игрока
+    public Transform Player; // Ссылка на трансформ игрока (назнается извне)
     private Vector3 offset; // Смещение камеры относительно игрока
 
     void Start()
     {
         // Вычисляем начальное смещение камеры относительно игрока
-        if (player != null)
+        if (Player != null)
         {
-            offset = transform.position - player.position;
+            offset = transform.position - Player.position;
+        }
+        else
+        {
+            Debug.LogError("CameraFollow: Player transform не назначен!");
         }
     }
 
     void LateUpdate()
     {
-        if (player != null)
+        if (Player != null)
         {
             // Обновляем позицию камеры с учетом смещения
-            transform.position = player.position + offset;
+            transform.position = Player.position + offset;
         }
     }
 }
