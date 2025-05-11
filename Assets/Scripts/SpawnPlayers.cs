@@ -4,9 +4,9 @@ using System.Collections.Generic;
 
 public class SpawnPlayers : MonoBehaviour
 {
-    public GameObject Player; // Префаб игрока (с PhotonView)
-    public List<Transform> spawnPoints; // Список точек спавна
-    public GameObject Camera; // Префаб камеры игрока
+    public GameObject Player;
+    public List<Transform> spawnPoints;
+    public Joystick joystick; // Перетащите сюда джойстик из Canvas
 
     void Start()
     {
@@ -15,33 +15,13 @@ public class SpawnPlayers : MonoBehaviour
 
     void SpawnPlayer()
     {
-        // Выбираем случайную точку спавна
         int randomIndex = Random.Range(0, spawnPoints.Count);
-        Transform spawnPoint = spawnPoints[randomIndex];
+        GameObject player = PhotonNetwork.Instantiate(Player.name, spawnPoints[randomIndex].position, spawnPoints[randomIndex].rotation);
 
-        // Спавним игрока в выбранной точке
-        GameObject player = PhotonNetwork.Instantiate(Player.name, spawnPoint.position, spawnPoint.rotation);
-
-        // Спавним камеру и настраиваем ее следовать за игроком
-        if (Camera != null)
+        // Передаём джойстик локальному игроку
+        if (player.GetComponent<PhotonView>().IsMine)
         {
-            // Находим существующую камеру (предполагается, что она уже есть на сцене)
-            GameObject cameraHolder = GameObject.Find("Main Camera");
-            CameraFollow cameraFollow = cameraHolder.GetComponent<CameraFollow>();
-
-            if (cameraFollow != null)
-            {
-                cameraFollow.Player = player.transform; //Назначаем игрока для следования
-
-            }
-            else
-            {
-                Debug.LogError("Префаб камеры не имеет компонента CameraFollow!");
-            }
-        }
-        else
-        {
-            Debug.LogError("Не назначен префаб камеры!");
+            player.GetComponent<PlayerMovement>().joystick = joystick;
         }
     }
 }

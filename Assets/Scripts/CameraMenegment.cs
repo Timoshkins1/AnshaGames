@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class CameraFollow : MonoBehaviour
+public class CameraMenegment : MonoBehaviour
 {
     public Transform Player; // Ссылка на трансформ игрока (назнается извне)
     private Vector3 offset; // Смещение камеры относительно игрока

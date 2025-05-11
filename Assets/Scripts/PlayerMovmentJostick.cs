@@ -1,53 +1,50 @@
 using UnityEngine;
-using UnityEngine.UI;
+using Photon.Pun;
 
-public class PlayerMovement : MonoBehaviour
+public class PlayerMovement : MonoBehaviourPun
 {
-    public Joystick joystick; // Ссылка на джойстик
-    public float moveSpeed = 5f; // Скорость движения
-    public float rotationSpeed = 10f; // Скорость поворота
+    [SerializeField] public Joystick joystick; // SerializeField для ручного назначения или поиска
+    public float moveSpeed = 5f;
+    public float rotationSpeed = 10f;
 
     private CharacterController characterController;
-    public Animator anim; // Ссылка на компонент Animator
+    public Animator anim;
 
     void Start()
     {
-        // Получаем компонент CharacterController
         characterController = GetComponent<CharacterController>();
+
+        // Если джойстик не задан в инспекторе и это локальный игрок — ищем его
+        if (joystick == null && photonView.IsMine)
+        {
+            joystick = FindObjectOfType<Joystick>();
+            if (joystick == null)
+                Debug.LogError("Joystick not found!");
+        }
     }
 
     void Update()
     {
-        // Получаем ввод с джойстика
+        // Работаем только с локальным игроком
+        if (!photonView.IsMine)
+            return;
+
+        if (joystick == null)
+            return;
+
         float horizontal = joystick.Horizontal;
         float vertical = joystick.Vertical;
 
-        // Создаем вектор движения
-        Vector3 movement = new Vector3(horizontal, 0f, vertical);
-
-        // Нормализуем вектор, чтобы игрок не двигался быстрее по диагонали
-        if (movement.magnitude > 1f)
-        {
-            movement.Normalize();
-        }
-
-        // Перемещаем игрока
+        Vector3 movement = new Vector3(horizontal, 0f, vertical).normalized;
         characterController.Move(movement * moveSpeed * Time.deltaTime);
 
-        // Проверяем, есть ли ввод от джойстика
-        bool isMoving = movement.magnitude > 0.1f; // Порог для определения движения
-        anim.SetBool("Run", isMoving); // Устанавливаем параметр "Run" в Animator
+        bool isMoving = movement.magnitude > 0.1f;
+        anim.SetBool("Run", isMoving);
 
-        // Поворачиваем игрока в направлении движения
         if (isMoving)
         {
-            // Рассчитываем направление поворота
-            Quaternion toRotation = Quaternion.LookRotation(movement, Vector3.up);
-
-            // Корректируем поворот на 90 градусов по оси Y, чтобы исправить ориентацию модели
-            toRotation *= Quaternion.Euler(0, -90, 0); // Поворот на -90 градусов по оси Y
-
-            // Плавно поворачиваем персонажа
+            Quaternion toRotation = Quaternion.LookRotation(movement);
+            toRotation *= Quaternion.Euler(0, -90, 0); // Корректировка поворота
             transform.rotation = Quaternion.Slerp(transform.rotation, toRotation, rotationSpeed * Time.deltaTime);
         }
     }
