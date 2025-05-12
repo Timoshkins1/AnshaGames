@@ -10,6 +10,7 @@ public class SpawnPlayers : MonoBehaviour
 
     void Start()
     {
+
         SpawnPlayer();
     }
 
