@@ -1,51 +1,52 @@
-using UnityEngine;
 using Photon.Pun;
+using UnityEngine;
 
-public class PlayerMovement : MonoBehaviourPun
+public class PlayerController : MonoBehaviourPun, IPunObservable
 {
-    [SerializeField] public Joystick joystick; // SerializeField для ручного назначения или поиска
     public float moveSpeed = 5f;
-    public float rotationSpeed = 10f;
+    public Joystick joystick; // Джойстик из Canvas
+    public Transform firePoint;
+    public GameObject bulletPrefab;
 
-    private CharacterController characterController;
-    public Animator anim;
+    private Rigidbody2D rb;
 
     void Start()
     {
-        characterController = GetComponent<CharacterController>();
-
-        // Если джойстик не задан в инспекторе и это локальный игрок — ищем его
-        if (joystick == null && photonView.IsMine)
+        rb = GetComponent<Rigidbody2D>();
+        if (!photonView.IsMine) // Отключаем управление, если это не наш игрок
         {
-            joystick = FindObjectOfType<Joystick>();
-            if (joystick == null)
-                Debug.LogError("Joystick not found!");
+            Destroy(GetComponent<PlayerController>());
+            return;
         }
+
+        // Находим джойстик в сцене (если он не в префабе)
+        joystick = FindObjectOfType<Joystick>();
+        Camera.main.GetComponent<CameraFollow>().target = transform; // Привязываем камеру
     }
 
     void Update()
     {
-        // Работаем только с локальным игроком
-        if (!photonView.IsMine)
-            return;
+        if (!photonView.IsMine) return;
 
-        if (joystick == null)
-            return;
+        // Движение через джойстик
+        Vector2 moveInput = new Vector2(joystick.Horizontal, joystick.Vertical);
+        rb.velocity = moveInput * moveSpeed;
 
-        float horizontal = joystick.Horizontal;
-        float vertical = joystick.Vertical;
-
-        Vector3 movement = new Vector3(horizontal, 0f, vertical).normalized;
-        characterController.Move(movement * moveSpeed * Time.deltaTime);
-
-        bool isMoving = movement.magnitude > 0.1f;
-        anim.SetBool("Run", isMoving);
-
-        if (isMoving)
+        // Стрельба по тапу (или другой кнопке)
+        if (Input.GetMouseButtonDown(0))
         {
-            Quaternion toRotation = Quaternion.LookRotation(movement);
-            toRotation *= Quaternion.Euler(0, -90, 0); // Корректировка поворота
-            transform.rotation = Quaternion.Slerp(transform.rotation, toRotation, rotationSpeed * Time.deltaTime);
+            photonView.RPC("Shoot", RpcTarget.All);
         }
+    }
+
+    [PunRPC]
+    void Shoot()
+    {
+        Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);
+    }
+
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        // Синхронизация позиции, если нужно
     }
 }

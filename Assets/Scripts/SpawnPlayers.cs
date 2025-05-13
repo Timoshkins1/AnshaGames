@@ -20,9 +20,6 @@ public class SpawnPlayers : MonoBehaviour
         GameObject player = PhotonNetwork.Instantiate(Player.name, spawnPoints[randomIndex].position, spawnPoints[randomIndex].rotation);
 
         // Передаём джойстик локальному игроку
-        if (player.GetComponent<PhotonView>().IsMine)
-        {
-            player.GetComponent<PlayerMovement>().joystick = joystick;
-        }
+        
     }
 }
