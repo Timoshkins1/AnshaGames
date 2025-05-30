@@ -1,38 +1,59 @@
-using System.Security.Cryptography.X509Certificates;
 using UnityEngine;
-using UnityEngine.UI; 
+using UnityEngine.SceneManagement;
 
-public class MenuController : MonoBehaviour 
+public class MenuController : MonoBehaviour
 {
-    //переменные чтобы их юзать и потом бросать типо поюзал и бросил
-    public GameObject inputJoin;
-    public GameObject inputCreate;
-    public GameObject playButton;
-    public GameObject settingsButton;
-    public GameObject shopButton;
-    public GameObject buttonCreate; 
-    public GameObject buttonJoin;
-    
+    [Header("Camera Settings")]
+    [SerializeField] private Transform _cameraPivot; // Объект, к которому привязана камера
+    [SerializeField] private float _rotationSpeed = 5f;
+    [SerializeField] private Vector3 _defaultRotation = new Vector3(0, 0, 0); // Стартовый поворот
+    [SerializeField] private Vector3 _targetRotation = new Vector3(0, -45, 0); // Поворот для 2-й кнопки
+
+    private bool _shouldRotate = false;
+    private Vector3 _desiredRotation;
+
     private void Start()
     {
-        //типа сначала отключены и ждут активация как мой мозг
-        buttonCreate.SetActive(false);
-        buttonJoin.SetActive(false);
-        inputJoin.SetActive(false);
-        inputCreate.SetActive(false);
-
+        _desiredRotation = _defaultRotation;
+        _cameraPivot.rotation = Quaternion.Euler(_defaultRotation);
     }
-    public void PlayButtonClicked()
-    {
-        // Отключаем старые кнопки
-        playButton.SetActive(false);
-        settingsButton.SetActive(false);
-        shopButton.SetActive(false);
 
-        // Включаем новые кнопки
-        buttonCreate.SetActive(true);
-        buttonJoin.SetActive(true);
-        inputJoin.SetActive(true);
-        inputCreate.SetActive(true);
+    private void Update()
+    {
+        if (_shouldRotate)
+        {
+            // Плавный поворот камеры
+            _cameraPivot.rotation = Quaternion.Lerp(
+                _cameraPivot.rotation,
+                Quaternion.Euler(_desiredRotation),
+                _rotationSpeed * Time.deltaTime
+            );
+
+            // Остановка при достижении цели
+            if (Quaternion.Angle(_cameraPivot.rotation, Quaternion.Euler(_desiredRotation)) < 0.1f)
+            {
+                _shouldRotate = false;
+            }
+        }
+    }
+
+    // Вызывается при нажатии кнопки "Играть"
+    public void LoadGameScene()
+    {
+        SceneManager.LoadScene("LoadingScene");
+    }
+
+    // Вызывается при нажатии кнопки "Повернуть камеру"
+    public void RotateCamera()
+    {
+        _desiredRotation = _targetRotation;
+        _shouldRotate = true;
+    }
+
+    // Вызывается при нажатии кнопки "Сбросить камеру"
+    public void ResetCameraRotation()
+    {
+        _desiredRotation = _defaultRotation;
+        _shouldRotate = true;
     }
 }
