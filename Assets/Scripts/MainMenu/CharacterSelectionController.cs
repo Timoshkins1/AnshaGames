@@ -3,7 +3,7 @@ using TMPro;
 using System.Collections;
 using System.Collections.Generic;
 
-
+[System.Serializable]
 
 public class CharacterSelectionController : MonoBehaviour
 {
@@ -14,6 +14,7 @@ public class CharacterSelectionController : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _damageText;
     [SerializeField] private TextMeshProUGUI _healthText;
     [SerializeField] private TextMeshProUGUI _speedText;
+    [SerializeField] private GameObject _confirmButton;
 
     [Header("Animation Settings")]
     [SerializeField] private Transform _modelContainer;
@@ -28,6 +29,11 @@ public class CharacterSelectionController : MonoBehaviour
     private int _currentIndex = 0;
     private bool _isAnimating = false;
     private Vector3 _originalContainerPosition;
+    private int _selectedCharacterID = -1;
+
+    private const string FIRST_RUN_KEY = "FirstRun";
+    private const int DEFAULT_CHARACTER_ID = 1;
+    private const string SELECTED_CHARACTER_KEY = "SelectedCharacterID";
 
     private void Start()
     {
@@ -37,7 +43,30 @@ public class CharacterSelectionController : MonoBehaviour
             _showYPosition,
             _originalContainerPosition.z
         );
-        ShowCharacter(0);
+
+        // Проверяем первый ли это запуск
+        if (!PlayerPrefs.HasKey(FIRST_RUN_KEY))
+        {
+            PlayerPrefs.SetInt(FIRST_RUN_KEY, 1);
+            PlayerPrefs.SetInt(SELECTED_CHARACTER_KEY, DEFAULT_CHARACTER_ID);
+            PlayerPrefs.Save();
+        }
+
+        // Загружаем последний выбранный персонаж
+        _selectedCharacterID = PlayerPrefs.GetInt(SELECTED_CHARACTER_KEY, DEFAULT_CHARACTER_ID);
+
+        // Находим индекс по ID или используем 0
+        _currentIndex = _characters.FindIndex(c => c.characterID == _selectedCharacterID);
+
+        // Если персонаж с таким ID не найден, используем первого в списке
+        if (_currentIndex < 0)
+        {
+            _currentIndex = 0;
+            _selectedCharacterID = _characters[0].characterID;
+        }
+
+        ShowCharacter(_currentIndex);
+        UpdateConfirmButton();
     }
 
     public void NextCharacter()
@@ -54,14 +83,26 @@ public class CharacterSelectionController : MonoBehaviour
         StartCoroutine(SwitchCharacterCoroutine(newIndex));
     }
 
+    public void ConfirmSelection()
+    {
+        if (_characters.Count == 0 || _currentIndex < 0 || _currentIndex >= _characters.Count)
+            return;
+
+        // Сохраняем ID выбранного персонажа
+        _selectedCharacterID = _characters[_currentIndex].characterID;
+        PlayerPrefs.SetInt(SELECTED_CHARACTER_KEY, _selectedCharacterID);
+        PlayerPrefs.Save();
+
+        UpdateConfirmButton();
+        Debug.Log($"Выбран персонаж ID: {_selectedCharacterID}");
+    }
+
     private IEnumerator SwitchCharacterCoroutine(int newIndex)
     {
         _isAnimating = true;
 
-        // Hide current model
         yield return StartCoroutine(MoveModel(false));
 
-        // Destroy old model
         if (_currentModel != null)
         {
             Destroy(_currentModel);
@@ -69,7 +110,6 @@ public class CharacterSelectionController : MonoBehaviour
 
         _currentIndex = newIndex;
 
-        // Create new model with custom position/rotation
         if (_characters[_currentIndex].characterPrefab != null)
         {
             _currentModel = Instantiate(
@@ -77,16 +117,23 @@ public class CharacterSelectionController : MonoBehaviour
                 _modelContainer
             );
 
-            // Apply custom position and rotation
             _currentModel.transform.localPosition = _characters[_currentIndex].spawnPositionOffset;
             _currentModel.transform.localRotation = Quaternion.Euler(_characters[_currentIndex].spawnRotation);
         }
 
-        // Show new model
         yield return StartCoroutine(MoveModel(true));
 
         UpdateCharacterInfo();
+        UpdateConfirmButton();
         _isAnimating = false;
+    }
+
+    private void UpdateConfirmButton()
+    {
+        if (_confirmButton == null) return;
+
+        bool isSelected = _characters[_currentIndex].characterID == _selectedCharacterID;
+        _confirmButton.SetActive(!isSelected);
     }
 
     private IEnumerator MoveModel(bool moveUp)
@@ -125,12 +172,12 @@ public class CharacterSelectionController : MonoBehaviour
                 _modelContainer
             );
 
-            // Apply custom transform
             _currentModel.transform.localPosition = _characters[_currentIndex].spawnPositionOffset;
             _currentModel.transform.localRotation = Quaternion.Euler(_characters[_currentIndex].spawnRotation);
         }
 
         UpdateCharacterInfo();
+        UpdateConfirmButton();
     }
 
     private void UpdateCharacterInfo()

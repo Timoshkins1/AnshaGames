@@ -40,7 +40,7 @@ public class MenuController : MonoBehaviour
     // Вызывается при нажатии кнопки "Играть"
     public void LoadGameScene()
     {
-        SceneManager.LoadScene("LoadingScene");
+        SceneManager.LoadScene("GameScene");
     }
 
     // Вызывается при нажатии кнопки "Повернуть камеру"

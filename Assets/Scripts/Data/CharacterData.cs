@@ -3,6 +3,7 @@ using UnityEngine;
 [System.Serializable]
 public class CharacterData
 {
+    public int characterID; // ”никальный ID персонажа
     public string characterName;
     [TextArea] public string description;
     public string attackType;
