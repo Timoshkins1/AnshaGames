@@ -7,6 +7,7 @@ public class CharacterData
     public string characterName;
     [TextArea] public string description;
     public string attackType;
+    public int attackTypeID;
     public int damage;
     public int health;
     public int speed;

@@ -1,58 +1,59 @@
 using UnityEngine;
 
-[RequireComponent(typeof(Health))]
+[RequireComponent(typeof(Rigidbody))]
 public class PlayerController : MonoBehaviour
 {
     [Header("Movement")]
-    [SerializeField] private Rigidbody _rb;
-    [SerializeField] private FixedJoystick _joystick;
+    [SerializeField] private FixedJoystick _moveJoystick;
     [SerializeField] private float _moveSpeed = 5f;
     [SerializeField] private Transform _model;
-    [SerializeField] private float _rotationCorrection = -90f;
+    [SerializeField] private float _rotationSpeed = 10f;
 
+    [Header("Attack")]
+    [SerializeField] private FixedJoystick _attackJoystick;
+    [SerializeField] private Transform _attackOrigin;
 
-    [Header("References")]
-    [SerializeField] private SpawnSystem _spawnSystem;
-
-    private Health _health;
-    private bool _isActive = true;
+    private Rigidbody _rb;
+    private PlayerAttack _attackSystem;
 
     private void Awake()
     {
-        _health = GetComponent<Health>();
-        _health.OnDeath += HandleDeath;
+        _rb = GetComponent<Rigidbody>();
+        _attackSystem = GetComponent<PlayerAttack>();
 
-        if (_rb == null) _rb = GetComponent<Rigidbody>();
+        // Инициализация системы атаки
+        if (_attackSystem != null)
+        {
+            _attackSystem.Initialize(_attackJoystick, _attackOrigin);
+        }
     }
+    private void Start()
+    {
+        int characterID = PlayerPrefs.GetInt("SelectedCharacterID", 1);
 
+        // Удаляем старые атаки
+        var oldAttack = GetComponent<PlayerAttack>();
+        if (oldAttack != null) Destroy(oldAttack);
+
+        // Добавляем нужный тип
+        switch (characterID)
+        {
+            case 1: gameObject.AddComponent<MeleeAttack>(); break;
+            case 2: gameObject.AddComponent<ShotgunAttack>(); break;
+            case 3: gameObject.AddComponent<RangedAttack>(); break;
+        }
+    }
     private void FixedUpdate()
     {
-        if (!_isActive) return;
-
-        Vector3 moveInput = new Vector3(_joystick.Horizontal, 0f, _joystick.Vertical);
+        // Движение
+        Vector3 moveInput = new Vector3(_moveJoystick.Horizontal, 0, _moveJoystick.Vertical);
         _rb.velocity = moveInput.normalized * _moveSpeed;
 
+        // Поворот модели
         if (moveInput != Vector3.zero)
         {
-            Quaternion targetRotation = Quaternion.LookRotation(moveInput) * Quaternion.Euler(0, _rotationCorrection, 0);
-            _model.rotation = targetRotation;
+            Quaternion targetRotation = Quaternion.LookRotation(moveInput);
+            _model.rotation = Quaternion.Slerp(_model.rotation, targetRotation, _rotationSpeed * Time.deltaTime);
         }
-        else
-        {
-            _rb.velocity = Vector3.zero;
-            _rb.angularVelocity = Vector3.zero;
-        }
-    }
-
-    private void HandleDeath()
-    {
-        _isActive = false;
-        _rb.velocity = Vector3.zero;
-        _spawnSystem.RespawnPlayer(gameObject);
-    }
-
-    public void OnEnable()
-    {
-        _isActive = true;
     }
 }

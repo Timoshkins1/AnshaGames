@@ -5383,6 +5383,37 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 7252374368816345918, guid: cc317ddb160674a458b56952446876ad, type: 3}
   m_PrefabInstance: {fileID: 343978657}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &675119943
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 675119944}
+  m_Layer: 0
+  m_Name: AttackOrigin
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &675119944
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 675119943}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.752, y: 19.958, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1597584210}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &682828160
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -11310,6 +11341,7 @@ GameObject:
   - component: {fileID: 1597584209}
   - component: {fileID: 1597584208}
   - component: {fileID: 1597584207}
+  - component: {fileID: 1597584213}
   m_Layer: 0
   m_Name: PlayerRoot
   m_TagString: Untagged
@@ -11334,6 +11366,8 @@ MonoBehaviour:
   _moveSpeed: 5
   _model: {fileID: 1188977579}
   _rotationCorrection: -90
+  _attackJoystick: {fileID: 1792430418}
+  _attackOrigin: {fileID: 675119944}
   _spawnSystem: {fileID: 2057774520}
 --- !u!54 &1597584208
 Rigidbody:
@@ -11400,6 +11434,7 @@ Transform:
   m_Children:
   - {fileID: 155815231}
   - {fileID: 1188977579}
+  - {fileID: 675119944}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1597584212
@@ -11415,6 +11450,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _maxHealth: 100
+--- !u!114 &1597584213
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1597584206}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 52751c12d6890c04c92fc9e8bbc23189, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _staminaCost: 10
+  _staminaRegenRate: 5
+  _maxStamina: 100
+  _attackCooldown: 0.5
+  _attackJoystick: {fileID: 1792430418}
+  _attackOrigin: {fileID: 675119944}
 --- !u!1001 &1604387918
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -12743,6 +12796,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 2929252283123773938, guid: aaa2c939c0359ac4dbce3f49e8b90252, type: 3}
   m_PrefabInstance: {fileID: 2137771950}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1792430418 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2929252283123773951, guid: aaa2c939c0359ac4dbce3f49e8b90252, type: 3}
+  m_PrefabInstance: {fileID: 2137771950}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45977bbae16431c46a013576a1aea384, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1802579795
 GameObject:
   m_ObjectHideFlags: 0
@@ -14440,7 +14504,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2929252283123773939, guid: aaa2c939c0359ac4dbce3f49e8b90252, type: 3}
       propertyPath: m_Name
-      value: Fixed Joystick
+      value: MovementJoystick
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -15405,7 +15469,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2929252283123773939, guid: aaa2c939c0359ac4dbce3f49e8b90252, type: 3}
       propertyPath: m_Name
-      value: Fixed Joystick (1)
+      value: AttackJoystick
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
