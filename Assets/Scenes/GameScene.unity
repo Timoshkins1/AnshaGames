@@ -8977,7 +8977,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1188977574}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: 0, y: -0.7071068, z: 0, w: 0.7071068}
   m_LocalPosition: {x: 0, y: 17.96, z: 0}
   m_LocalScale: {x: 0.10000003, y: 0.1, z: 0.10000003}
   m_ConstrainProportionsScale: 0
@@ -8988,7 +8988,7 @@ Transform:
   - {fileID: 451789763}
   - {fileID: 793945653}
   m_Father: {fileID: 1597584210}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: -90, z: 0}
 --- !u!114 &1188977580
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11341,7 +11341,6 @@ GameObject:
   - component: {fileID: 1597584209}
   - component: {fileID: 1597584208}
   - component: {fileID: 1597584207}
-  - component: {fileID: 1597584213}
   m_Layer: 0
   m_Name: PlayerRoot
   m_TagString: Untagged
@@ -11361,14 +11360,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf4cf2dee1bea5045acce6fbfafba752, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _rb: {fileID: 1597584208}
-  _joystick: {fileID: 1938697023}
+  _moveJoystick: {fileID: 1938697023}
   _moveSpeed: 5
   _model: {fileID: 1188977579}
-  _rotationCorrection: -90
+  _rotationSpeed: 10
   _attackJoystick: {fileID: 1792430418}
   _attackOrigin: {fileID: 675119944}
-  _spawnSystem: {fileID: 2057774520}
 --- !u!54 &1597584208
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -11450,24 +11447,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _maxHealth: 100
---- !u!114 &1597584213
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1597584206}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 52751c12d6890c04c92fc9e8bbc23189, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _staminaCost: 10
-  _staminaRegenRate: 5
-  _maxStamina: 100
-  _attackCooldown: 0.5
-  _attackJoystick: {fileID: 1792430418}
-  _attackOrigin: {fileID: 675119944}
 --- !u!1001 &1604387918
 PrefabInstance:
   m_ObjectHideFlags: 0
