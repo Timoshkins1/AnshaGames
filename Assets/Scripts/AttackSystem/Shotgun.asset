@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: Shotgun
   m_EditorClassIdentifier: 
   bulletPrefab: {fileID: 13987118152924311, guid: 28ac2b6f78e156e44a6092732ba17de5, type: 3}
-  bulletsCount: 6
-  spreadAngle: 30
-  bulletSpeed: 23
-  bulletLifetime: 0.4
+  bulletsCount: 5
+  spreadAngle: 50
+  bulletSpeed: 20
+  bulletLifetime: 1
   damagePerBullet: 10
   knockbackForce: 5

@@ -3,12 +3,25 @@ using UnityEngine;
 public class DiamondSpawner : MonoBehaviour
 {
     [Header("Настройки")]
-    [SerializeField] private GameObject diamondPrefab; // Префаб алмаза
-    [SerializeField] private Transform[] spawnPoints;   // Точки, вокруг которых будет спавн
-    [SerializeField] private float spawnRadius = 5f;    // Радиус случайного смещения
-    [SerializeField] private float spawnInterval = 10f; // Интервал спавна (в секундах)
+    [SerializeField] private GameObject diamondPrefab;
+    [SerializeField] private Transform[] spawnPoints;
+    [SerializeField] private float spawnRadius = 5f;
 
-    private void Start()
+    public static DiamondSpawner Instance { get; private set; }
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+
+    public void SpawnWave(int diamondsCount)
     {
         if (spawnPoints.Length == 0)
         {
@@ -16,21 +29,20 @@ public class DiamondSpawner : MonoBehaviour
             return;
         }
 
-        InvokeRepeating(nameof(SpawnDiamond), spawnInterval, spawnInterval);
+        for (int i = 0; i < diamondsCount; i++)
+        {
+            SpawnDiamond();
+        }
     }
 
     private void SpawnDiamond()
     {
         if (!diamondPrefab) return;
 
-        // Выбираем случайную точку спавна
         Transform randomPoint = spawnPoints[Random.Range(0, spawnPoints.Length)];
-
-        // Получаем случайное смещение в радиусе
         Vector3 randomOffset = Random.insideUnitSphere * spawnRadius;
-        randomOffset.y = 0; // чтобы алмаз не уходил вверх/вниз
+        randomOffset.y = 0;
 
-        // Спавним алмаз
         Instantiate(diamondPrefab, randomPoint.position + randomOffset, Quaternion.identity);
     }
 }

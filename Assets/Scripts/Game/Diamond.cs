@@ -3,8 +3,9 @@ using UnityEngine;
 public class Diamond : MonoBehaviour
 {
     [Header("Настройки")]
-    [SerializeField] private float detectRadius = 2f; // Расстояние обнаружения игрока
-    [SerializeField] private LayerMask playerLayer;    // Слой игрока для проверки
+    [SerializeField] private float detectRadius = 2f;
+    [SerializeField] private LayerMask playerLayer;
+    [SerializeField] private GameObject collectEffect;
 
     private bool collected = false;
 
@@ -16,7 +17,6 @@ public class Diamond : MonoBehaviour
 
         foreach (Collider hit in hits)
         {
-            // Игрок найден — собираем алмаз
             Collect();
         }
     }
@@ -24,7 +24,13 @@ public class Diamond : MonoBehaviour
     private void Collect()
     {
         collected = true;
-        // Можно добавить эффект сбора (звук, анимацию и т.д.)
+
+        if (collectEffect != null)
+        {
+            Instantiate(collectEffect, transform.position, Quaternion.identity);
+        }
+
+        GameManager.Instance.DiamondCollected();
         Destroy(gameObject);
     }
 

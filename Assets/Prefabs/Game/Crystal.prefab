@@ -613,10 +613,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b503403bd0d9cf54bae87349133a4380, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  detectRadius: 0.73
+  detectRadius: 0.91
   playerLayer:
     serializedVersion: 2
     m_Bits: 8
+  collectEffect: {fileID: 0}
 --- !u!1 &9163603572742850392
 GameObject:
   m_ObjectHideFlags: 0

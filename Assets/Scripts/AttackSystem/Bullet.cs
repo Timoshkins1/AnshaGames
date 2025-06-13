@@ -60,6 +60,17 @@ public class Bullet : MonoBehaviour
                 targetRb.AddForce(knockbackDirection * knockbackForce, ForceMode.Impulse);
             }
         }
+        // Обработка попадания по объекту
+        if (other.TryGetComponent< ObjectHealth>(out var healthObj))
+        {
+            health.TakeDamage(damage);
+
+            if (other.TryGetComponent<Rigidbody>(out var targetRb))
+            {
+                Vector3 knockbackDirection = (other.transform.position - transform.position).normalized;
+                targetRb.AddForce(knockbackDirection * knockbackForce, ForceMode.Impulse);
+            }
+        }
 
         Destroy(gameObject);
     }
