@@ -10,9 +10,9 @@ GameObject:
   m_Component:
   - component: {fileID: 4759813122934566081}
   - component: {fileID: 8629115405077420896}
+  - component: {fileID: 378534962735345368}
   - component: {fileID: 9055736936911085147}
   - component: {fileID: 8307386925535467152}
-  - component: {fileID: 378534962735345368}
   - component: {fileID: 4120900055803892196}
   m_Layer: 9
   m_Name: EnemyRoot
@@ -57,7 +57,7 @@ MonoBehaviour:
   wanderRadius: 5
   wanderTimer: 3
   RunningSpeed: 5
-  MovementSpeed: 4
+  MovementSpeed: 2
   attack1Delay: 0.3
   attack2Delay: 0.4
   damage: 10
@@ -66,6 +66,23 @@ MonoBehaviour:
   animator: {fileID: 8189392441435412636}
   agent: {fileID: 9055736936911085147}
   hitCollider: {fileID: 4885012997560259631}
+--- !u!114 &378534962735345368
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 908762995404021666}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2fdfa69a5530a84ab4e8b157d95236c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHealth: 30
+  healthSlider: {fileID: 4722525629491606051}
+  healthText: {fileID: 7695771921422508240}
+  healthCanvas: {fileID: 1629982024027526408}
+  healthBarOffset: {x: 0, y: 2, z: 0}
 --- !u!195 &9055736936911085147
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -75,7 +92,7 @@ NavMeshAgent:
   m_GameObject: {fileID: 908762995404021666}
   m_Enabled: 1
   m_AgentTypeID: 0
-  m_Radius: 0.5
+  m_Radius: 1.2
   m_Speed: 3.5
   m_Acceleration: 8
   avoidancePriority: 50
@@ -87,7 +104,7 @@ NavMeshAgent:
   m_Height: 2
   m_BaseOffset: 1.56
   m_WalkableMask: 4294967295
-  m_ObstacleAvoidanceType: 4
+  m_ObstacleAvoidanceType: 2
 --- !u!136 &8307386925535467152
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -111,23 +128,6 @@ CapsuleCollider:
   m_Height: 3.01
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &378534962735345368
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 908762995404021666}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c2fdfa69a5530a84ab4e8b157d95236c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  maxHealth: 100
-  healthSlider: {fileID: 4722525629491606051}
-  healthText: {fileID: 7695771921422508240}
-  healthCanvas: {fileID: 1629982024027526408}
-  healthBarOffset: {x: 0, y: 2, z: 0}
 --- !u!136 &4120900055803892196
 CapsuleCollider:
   m_ObjectHideFlags: 0

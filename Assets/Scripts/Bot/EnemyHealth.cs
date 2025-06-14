@@ -19,11 +19,26 @@ public class EnemyHealth : MonoBehaviour
 
     public event System.Action OnDeath;
 
+    public int MaxHealth => maxHealth;
+
     private void Start()
     {
         mainCamera = Camera.main;
         currentHealth = maxHealth;
         botAI = GetComponent<BrawlStarsBotAI>();
+
+        if (healthSlider != null)
+        {
+            healthSlider.maxValue = maxHealth;
+            healthSlider.value = currentHealth;
+        }
+        UpdateHealthText();
+    }
+
+    public void SetMaxHealth(int newMaxHealth)
+    {
+        maxHealth = newMaxHealth;
+        currentHealth = maxHealth;
 
         if (healthSlider != null)
         {
@@ -48,22 +63,18 @@ public class EnemyHealth : MonoBehaviour
 
     private void Die()
     {
-        // Отключаем коллайдеры
         foreach (var collider in GetComponents<Collider>())
             collider.enabled = false;
 
-        // Отключаем UI
         if (healthCanvas != null)
             healthCanvas.enabled = false;
 
-        // Если есть AI, используем его систему смерти
         if (botAI != null)
         {
             botAI.HandleDeath();
         }
         else
         {
-            // Фолбэк вариант
             OnDeath?.Invoke();
             Destroy(gameObject);
         }

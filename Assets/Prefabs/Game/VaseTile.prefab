@@ -11,12 +11,14 @@ GameObject:
   - component: {fileID: 5227843344071339381}
   - component: {fileID: 1722748422630526724}
   - component: {fileID: 837394621144963610}
-  m_Layer: 0
+  - component: {fileID: 8811073224415900320}
+  - component: {fileID: 769301421584390902}
+  m_Layer: 13
   m_Name: VaseTile
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &5227843344071339381
 Transform:
@@ -46,7 +48,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: db9512285a4638d4d8da262666f92145, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 100
+  maxHealth: 30
 --- !u!65 &837394621144963610
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -66,8 +68,45 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 3.04, y: 3.68, z: 2.94}
+  m_Center: {x: 0, y: 1.17, z: 0}
+--- !u!65 &8811073224415900320
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3597154973926300309}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 3.16, y: 3.83, z: 3.18}
+  m_Center: {x: 0, y: 1.17, z: 0}
+--- !u!208 &769301421584390902
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3597154973926300309}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 1.8, y: 1.605, z: 1.82}
+  m_MoveThreshold: 0.1
+  m_Carve: 0
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0, y: 1.47, z: 0}
+  m_TimeToStationary: 0.5
 --- !u!1001 &3663685893093196308
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -135,6 +174,14 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: a99ab8e8f3a51d64880d9d16e8aa510c, type: 3}
       propertyPath: m_Name
       value: 004_Vase
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: a99ab8e8f3a51d64880d9d16e8aa510c, type: 3}
+      propertyPath: m_Layer
+      value: 13
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: a99ab8e8f3a51d64880d9d16e8aa510c, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

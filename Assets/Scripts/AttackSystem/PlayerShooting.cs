@@ -1,4 +1,8 @@
 using UnityEngine;
+using System.Collections.Generic;
+
+using UnityEngine;
+using System.Collections.Generic;
 
 public class PlayerShooting : MonoBehaviour
 {
@@ -8,11 +12,36 @@ public class PlayerShooting : MonoBehaviour
     public Joystick joystick;
     public float joystickDeadZone = 0.1f;
 
+    [Header("Targeting")]
+    public LayerMask targetLayer;
+    public float targetSearchRadius = 10f;
+
+    [Header("UI References")]
+    public AmmoDisplay ammoDisplay;
+
+    [Header("Shooting Settings")]
+    public float shotDelay = 0.2f; // Добавляем настраиваемую задержку между выстрелами
+
     private bool isAiming = false;
     private Vector3 shootDirection;
+    private Collider[] targetCollidersCache = new Collider[20];
+    private Transform nearestTarget;
 
+    // Система патронов и таймеры
+    private int currentAmmo;
+    private float reloadTimer;
+    private float shotCooldownTimer;
+    private bool isReloading = false;
+    private bool canShoot = true;
+
+    private void Start()
+    {
+        currentAmmo = attackConfig.maxAmmo;
+        UpdateAmmoDisplay();
+    }
     private void Update()
     {
+        HandleTimers();
         HandleJoystickInput();
     }
 
@@ -20,15 +49,101 @@ public class PlayerShooting : MonoBehaviour
     {
         Vector3 joystickDirection = new Vector3(joystick.Horizontal, 0, joystick.Vertical);
 
-        if (joystickDirection.magnitude > joystickDeadZone)
+        if (joystickDirection.sqrMagnitude > joystickDeadZone * joystickDeadZone)
         {
             isAiming = true;
             shootDirection = joystickDirection.normalized;
         }
-        else if (isAiming)
+        else if (isAiming && canShoot) // Добавляем проверку canShoot
         {
-            Shoot();
+            if (currentAmmo > 0)
+            {
+                FindNearestTarget();
+                Shoot();
+
+                // Обновляем состояние стрельбы
+                canShoot = false;
+                currentAmmo--;
+                UpdateAmmoDisplay();
+
+                if (!isReloading)
+                {
+                    isReloading = true;
+                    reloadTimer = 0f;
+                }
+            }
             isAiming = false;
+        }
+    }
+  
+    private void HandleTimers()
+    {
+        // Обработка перезарядки
+        if (currentAmmo < attackConfig.maxAmmo)
+        {
+            reloadTimer += Time.deltaTime;
+            if (ammoDisplay != null)
+                ammoDisplay.UpdateReloadProgress(reloadTimer / attackConfig.reloadTime);
+
+            if (reloadTimer >= attackConfig.reloadTime)
+            {
+                currentAmmo++;
+                reloadTimer = 0f;
+                UpdateAmmoDisplay();
+
+                if (currentAmmo >= attackConfig.maxAmmo)
+                {
+                    isReloading = false;
+                    if (ammoDisplay != null)
+                        ammoDisplay.UpdateReloadProgress(0f);
+                }
+            }
+        }
+
+        // Обработка задержки между выстрелами
+        if (!canShoot)
+        {
+            shotCooldownTimer += Time.deltaTime;
+            if (shotCooldownTimer >= shotDelay)
+            {
+                canShoot = true;
+                shotCooldownTimer = 0f;
+            }
+        }
+    }
+    private void UpdateAmmoDisplay()
+    {
+        if (ammoDisplay != null)
+        {
+            ammoDisplay.UpdateAmmo(currentAmmo, attackConfig.maxAmmo);
+        }
+    }
+    private void FindNearestTarget()
+    {
+        nearestTarget = null;
+        int targetsCount = Physics.OverlapSphereNonAlloc(
+            transform.position,
+            targetSearchRadius,
+            targetCollidersCache,
+            targetLayer
+        );
+
+        if (targetsCount == 0) return;
+
+        float minDistance = float.MaxValue;
+        for (int i = 0; i < targetsCount; i++)
+        {
+            float distance = (transform.position - targetCollidersCache[i].transform.position).sqrMagnitude;
+            if (distance < minDistance)
+            {
+                minDistance = distance;
+                nearestTarget = targetCollidersCache[i].transform;
+            }
+        }
+
+        if (nearestTarget != null)
+        {
+            shootDirection = (nearestTarget.position - firePoint.position).normalized;
         }
     }
 
@@ -49,10 +164,13 @@ public class PlayerShooting : MonoBehaviour
 
     private void CreateBullet(Vector3 direction)
     {
-        GameObject bullet = Instantiate(attackConfig.bulletPrefab, firePoint.position, Quaternion.identity);
-        Bullet bulletScript = bullet.GetComponent<Bullet>();
+        var bullet = Instantiate(
+            attackConfig.bulletPrefab,
+            firePoint.position,
+            Quaternion.LookRotation(direction)
+        );
 
-        bulletScript.Initialize(
+        bullet.GetComponent<Bullet>().Initialize(
             direction,
             attackConfig.bulletSpeed,
             attackConfig.bulletLifetime,
@@ -71,4 +189,4 @@ public class PlayerShooting : MonoBehaviour
             vector.x * Mathf.Sin(rad) + vector.z * Mathf.Cos(rad)
         ).normalized;
     }
-}
+}   

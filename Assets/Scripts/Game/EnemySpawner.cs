@@ -1,9 +1,10 @@
 using UnityEngine;
 using UnityEngine.AI;
+using System.Collections.Generic;
 
 public class EnemySpawner : MonoBehaviour
 {
-    [Header("Настройки спавна")]
+    [Header("Spawn Settings")]
     [SerializeField] private GameObject enemyPrefab;
     [SerializeField] private float spawnRadius = 15f;
     [SerializeField] private float minSpawnDistance = 10f;
@@ -13,12 +14,19 @@ public class EnemySpawner : MonoBehaviour
     [SerializeField] private LayerMask obstacleLayer;
     [SerializeField] private float spawnHeightCheck = 2f;
     [SerializeField] private float spawnCheckRadius = 1f;
-    [SerializeField] private bool debugLogging = true;
+    [SerializeField] private bool debugLogging = false;
 
-    [Header("Настройки интервалов")]
+    [Header("Timing Settings")]
     [SerializeField] private float spawnInterval = 3f;
     [SerializeField] private float waveCooldown = 5f;
     [SerializeField] private int maxSpawnAttempts = 10;
+
+    [Header("Enemy Scaling")]
+    [SerializeField] private float healthIncreasePerWave = 0.1f;
+    [SerializeField] private float walkSpeedIncreasePerWave = 0.05f;
+    [SerializeField] private float runSpeedIncreasePerWave = 0.05f;
+    [SerializeField] private float damageIncreasePerWave = 0.1f;
+    [SerializeField] private float runDetectionRangeIncreasePerWave = 0.05f;
 
     private Transform player;
     private int enemiesToSpawn;
@@ -26,6 +34,8 @@ public class EnemySpawner : MonoBehaviour
     private float spawnTimer;
     private NavMeshHit navHit;
     private int spawnAttemptCount = 0;
+    private Vector3[] precomputedDirections = new Vector3[8]; // Предварительно вычисленные направления
+    private List<GameObject> activeEnemies = new List<GameObject>();
 
     public static EnemySpawner Instance { get; private set; }
 
@@ -38,21 +48,34 @@ public class EnemySpawner : MonoBehaviour
         else
         {
             Destroy(gameObject);
+            return;
         }
+
+        PrecomputeDirections();
     }
 
     private void Start()
     {
-        player = GameObject.FindGameObjectWithTag("Player").transform;
-        if (debugLogging) Debug.Log("EnemySpawner initialized. Player: " + player.name);
+        player = GameObject.FindWithTag("Player").transform;
+        if (debugLogging) Debug.Log("EnemySpawner initialized");
+    }
+
+    private void PrecomputeDirections()
+    {
+        // Предварительно вычисляем 8 основных направлений для спавна
+        for (int i = 0; i < 8; i++)
+        {
+            float angle = i * Mathf.PI * 2f / 8;
+            precomputedDirections[i] = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle));
+        }
     }
 
     public void StartWave(int wave)
     {
         currentWave = wave;
         enemiesToSpawn = initialEnemies + (wave - 1) * enemiesIncreasePerWave;
-        spawnTimer = 0f;
-        if (debugLogging) Debug.Log($"Starting wave {wave}. Enemies to spawn: {enemiesToSpawn}");
+        spawnTimer = spawnInterval; // Начинаем спавн сразу
+        if (debugLogging) Debug.Log($"Starting wave {wave}");
     }
 
     private void Update()
@@ -64,7 +87,6 @@ public class EnemySpawner : MonoBehaviour
             if (spawnTimer >= spawnInterval)
             {
                 spawnTimer = 0f;
-                spawnAttemptCount = 0;
                 TrySpawnEnemy();
                 enemiesToSpawn--;
             }
@@ -73,109 +95,128 @@ public class EnemySpawner : MonoBehaviour
 
     private void TrySpawnEnemy()
     {
-        if (!enemyPrefab)
-        {
-            if (debugLogging) Debug.LogError("Enemy prefab is not assigned!");
-            return;
-        }
+        if (!enemyPrefab || !player) return;
 
-        if (!player)
+        // Пробуем предварительно вычисленные направления сначала
+        for (int i = 0; i < precomputedDirections.Length && spawnAttemptCount < maxSpawnAttempts; i++)
         {
-            if (debugLogging) Debug.LogError("Player reference is missing!");
-            return;
-        }
-
-        for (int i = 0; i < maxSpawnAttempts; i++)
-        {
-            spawnAttemptCount++;
-            Vector3 spawnPosition = GetRandomSpawnPosition();
-
-            if (IsValidSpawnPosition(spawnPosition, out string failReason))
-            {
-                Instantiate(enemyPrefab, spawnPosition, Quaternion.identity);
-                if (debugLogging) Debug.Log($"Enemy spawned at {spawnPosition} (attempt {spawnAttemptCount})");
+            if (TrySpawnAtDirection(precomputedDirections[i]))
                 return;
-            }
-            else
-            {
-                if (debugLogging) Debug.Log($"Spawn failed at {spawnPosition}: {failReason}");
-            }
         }
 
-        if (debugLogging) Debug.LogWarning($"Failed to spawn enemy after {maxSpawnAttempts} attempts");
+        // Если не получилось, пробуем случайные направления
+        while (spawnAttemptCount < maxSpawnAttempts)
+        {
+            Vector2 randomCircle = Random.insideUnitCircle.normalized;
+            Vector3 spawnDirection = new Vector3(randomCircle.x, 0f, randomCircle.y);
+
+            if (TrySpawnAtDirection(spawnDirection))
+                return;
+        }
+
+        if (debugLogging) Debug.LogWarning($"Failed to spawn after {maxSpawnAttempts} attempts");
     }
 
-    private Vector3 GetRandomSpawnPosition()
+    private bool TrySpawnAtDirection(Vector3 direction)
     {
-        Vector2 randomCircle = Random.insideUnitCircle.normalized;
-        Vector3 spawnDirection = new Vector3(randomCircle.x, 0f, randomCircle.y);
-        Vector3 spawnPosition = player.position + spawnDirection * (spawnRadius + Random.Range(0f, 5f));
+        spawnAttemptCount++;
+        Vector3 spawnPosition = player.position + direction * (spawnRadius + Random.Range(0f, 5f));
 
-        // Проверяем, чтобы точка спавна не была слишком близко к игроку
         if (Vector3.Distance(spawnPosition, player.position) < minSpawnDistance)
         {
-            spawnPosition = player.position + (spawnPosition - player.position).normalized * minSpawnDistance;
+            spawnPosition = player.position + direction * minSpawnDistance;
         }
 
-        return spawnPosition;
+        if (IsValidSpawnPosition(spawnPosition, out _))
+        {
+            SpawnEnemy(spawnPosition);
+            return true;
+        }
+        return false;
+    }
+
+    private void SpawnEnemy(Vector3 position)
+    {
+        var enemy = Instantiate(enemyPrefab, position, Quaternion.identity);
+        ApplyWaveStats(enemy, currentWave);
+        activeEnemies.Add(enemy);
+        if (debugLogging) Debug.Log($"Enemy spawned at {position}");
+    }
+
+    private void ApplyWaveStats(GameObject enemy, int wave)
+    {
+        if (wave <= 1) return;
+
+        float waveMultiplier = 1 + (wave - 1) * 0.1f; // Общий множитель для оптимизации вычислений
+
+        var health = enemy.GetComponent<EnemyHealth>();
+        if (health != null)
+        {
+            health.SetMaxHealth(Mathf.RoundToInt(health.MaxHealth * (1 + healthIncreasePerWave * (wave - 1))));
+        }
+
+        var ai = enemy.GetComponent<BrawlStarsBotAI>();
+        if (ai != null)
+        {
+            ai.MovementSpeed *= (1 + walkSpeedIncreasePerWave * (wave - 1));
+            ai.RunningSpeed *= (1 + runSpeedIncreasePerWave * (wave - 1));
+            ai.damage = Mathf.RoundToInt(ai.damage * (1 + damageIncreasePerWave * (wave - 1)));
+            ai.runDetectionRange *= (1 + runDetectionRangeIncreasePerWave * (wave - 1));
+        }
     }
 
     private bool IsValidSpawnPosition(Vector3 position, out string failReason)
     {
-        // Проверка на наличие земли под позицией
+        // Проверка земли
         if (!Physics.Raycast(position + Vector3.up * spawnHeightCheck, Vector3.down,
                            spawnHeightCheck * 2, groundLayer))
         {
-            failReason = "No ground below";
+            failReason = "No ground";
             return false;
         }
 
-        // Проверка на наличие препятствий
+        // Проверка препятствий
         if (Physics.CheckSphere(position, spawnCheckRadius, obstacleLayer))
         {
-            failReason = "Obstacle detected";
+            failReason = "Obstacle";
             return false;
         }
 
-        // Проверка на доступность в NavMesh
+        // Проверка NavMesh
         if (!NavMesh.SamplePosition(position, out navHit, spawnCheckRadius, NavMesh.AllAreas))
         {
-            failReason = "Not on NavMesh";
+            failReason = "No NavMesh";
             return false;
         }
 
-        // Фиксируем Y-координату по NavMesh
-        position.y = navHit.position.y;
-
-        // Проверка расстояния до игрока
-        if (Vector3.Distance(position, player.position) < minSpawnDistance)
+        // Проверка расстояния
+        if ((player.position - position).sqrMagnitude < minSpawnDistance * minSpawnDistance)
         {
-            failReason = "Too close to player";
+            failReason = "Too close";
             return false;
         }
 
-        failReason = "Valid position";
+        failReason = "Valid";
         return true;
+    }
+
+    public void CleanupAllEnemies()
+    {
+        foreach (var enemy in activeEnemies)
+        {
+            if (enemy != null) Destroy(enemy);
+        }
+        activeEnemies.Clear();
     }
 
     private void OnDrawGizmosSelected()
     {
         if (player != null)
         {
-            Gizmos.color = Color.red;
+            Gizmos.color = new Color(1, 0, 0, 0.3f);
             Gizmos.DrawWireSphere(player.position, minSpawnDistance);
-            Gizmos.color = Color.yellow;
+            Gizmos.color = new Color(1, 1, 0, 0.2f);
             Gizmos.DrawWireSphere(player.position, spawnRadius);
-        }
-    }
-
-    private void OnGUI()
-    {
-        if (debugLogging)
-        {
-            GUI.Label(new Rect(10, 100, 300, 20), $"Current Wave: {currentWave}");
-            GUI.Label(new Rect(10, 120, 300, 20), $"Enemies to Spawn: {enemiesToSpawn}");
-            GUI.Label(new Rect(10, 140, 300, 20), $"Last Attempts: {spawnAttemptCount}/{maxSpawnAttempts}");
         }
     }
 }

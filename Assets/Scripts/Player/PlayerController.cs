@@ -3,101 +3,107 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerController : MonoBehaviour
 {
-    [Header("Movement")]
-    [SerializeField] private FixedJoystick _moveJoystick;
-    [SerializeField] private float _moveSpeed = 5f;
-    [SerializeField] private Transform _model; // Модель (если нужен отдельный поворот)
-    [SerializeField] private float _rotationSpeed = 10f;
-    [Header("Bush Speed Boost")]
-    [SerializeField] private float _bushSpeedMultiplier = 1.2f; // 20% увеличение скорости
-    [SerializeField] private float _boostFadeDuration = 0.5f; // Плавное исчезновение эффекта
+    [Header("Movement Settings")]
+    [SerializeField] private FixedJoystick moveJoystick;
+    [SerializeField] private float moveSpeed = 5f;
+    [SerializeField] private Transform model;
+    [SerializeField] private float rotationSpeed = 10f;
 
-    private Rigidbody _rb;
-    private float _currentSpeed;
-    private float _baseSpeed;
-    private bool _isInBush = false;
-    private float _boostTimer = 0f;
+    [Header("Bush Boost Settings")]
+    [SerializeField] private float bushSpeedMultiplier = 1.2f;
+    [SerializeField] private float boostFadeDuration = 0.5f;
+    [SerializeField] private float bushCheckInterval = 0.2f; // Оптимизация: проверяем реже
+    [SerializeField] private LayerMask bushLayer;
+
+    private Rigidbody rb;
+    private float currentSpeed;
+    private float baseSpeed;
+    private bool isInBush;
+    private float boostTimer;
+    private float lastBushCheckTime;
+    private Collider[] bushCheckCache = new Collider[1]; // Кэш для проверки кустов
 
     private void Awake()
     {
-        _rb = GetComponent<Rigidbody>();
-        _rb.freezeRotation = true; // Запрещаем физическому движку вращать объект
-        _baseSpeed = _moveSpeed;
-        _currentSpeed = _baseSpeed;
-    }
-
-    private void Start()
-    {
-        int characterID = PlayerPrefs.GetInt("SelectedCharacterID", 1);
+        rb = GetComponent<Rigidbody>();
+        rb.freezeRotation = true;
+        baseSpeed = moveSpeed;
+        currentSpeed = baseSpeed;
     }
 
     private void FixedUpdate()
     {
+        HandleBushCheck();
         UpdateSpeed();
         HandleMovement();
     }
 
+    private void HandleBushCheck()
+    {
+        // Оптимизация: проверяем наличие кустов не каждый кадр
+        if (Time.time - lastBushCheckTime >= bushCheckInterval)
+        {
+            lastBushCheckTime = Time.time;
+            isInBush = Physics.OverlapSphereNonAlloc(
+                transform.position,
+                0.5f, // Радиус проверки
+                bushCheckCache,
+                bushLayer
+            ) > 0;
+        }
+    }
+
     private void UpdateSpeed()
     {
-        if (_isInBush)
+        if (isInBush)
         {
-            _currentSpeed = _baseSpeed * _bushSpeedMultiplier;
-            _boostTimer = _boostFadeDuration; // Сбрасываем таймер, пока в кустах
+            currentSpeed = baseSpeed * bushSpeedMultiplier;
+            boostTimer = boostFadeDuration;
         }
-        else if (_boostTimer > 0)
+        else if (boostTimer > 0)
         {
-            _boostTimer -= Time.fixedDeltaTime;
-            // Плавное уменьшение скорости после выхода из кустов
-            _currentSpeed = Mathf.Lerp(_baseSpeed, _baseSpeed * _bushSpeedMultiplier, _boostTimer / _boostFadeDuration);
+            boostTimer -= Time.fixedDeltaTime;
+            currentSpeed = Mathf.Lerp(baseSpeed, baseSpeed * bushSpeedMultiplier, boostTimer / boostFadeDuration);
         }
         else
         {
-            _currentSpeed = _baseSpeed;
+            currentSpeed = baseSpeed;
         }
     }
 
     private void HandleMovement()
     {
-        Vector3 moveInput = new Vector3(_moveJoystick.Horizontal, 0, _moveJoystick.Vertical);
+        Vector2 joystickInput = new Vector2(moveJoystick.Horizontal, moveJoystick.Vertical);
 
-        if (moveInput.magnitude > 0.1f)
+        // Оптимизация: используем sqrMagnitude для проверки ввода
+        if (joystickInput.sqrMagnitude > 0.01f)
         {
-            // Нормализуем и применяем движение
-            moveInput = moveInput.normalized;
-            _rb.velocity = new Vector3(moveInput.x * _currentSpeed, _rb.velocity.y, moveInput.z * _currentSpeed);
+            Vector3 moveDirection = new Vector3(joystickInput.x, 0, joystickInput.y).normalized;
+            rb.velocity = new Vector3(
+                moveDirection.x * currentSpeed,
+                rb.velocity.y,
+                moveDirection.z * currentSpeed
+            );
 
-            // Поворот игрока в сторону движения (только по оси Y)
-            Quaternion targetRotation = Quaternion.LookRotation(moveInput);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, _rotationSpeed * Time.deltaTime);
+            // Оптимизация: поворот только если направление изменилось
+            if (moveDirection != Vector3.zero)
+            {
+                Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
+                transform.rotation = Quaternion.Slerp(
+                    transform.rotation,
+                    targetRotation,
+                    rotationSpeed * Time.fixedDeltaTime
+                );
+            }
         }
         else
         {
-            // Останавливаем движение, но сохраняем вертикальную скорость (например, для гравитации)
-            _rb.velocity = new Vector3(0, _rb.velocity.y, 0);
+            rb.velocity = new Vector3(0, rb.velocity.y, 0);
         }
 
-        // Модель всегда повторяет поворот игрока с offset -90 по Y
-        if (_model != null)
+        if (model != null)
         {
-            _model.rotation = transform.rotation * Quaternion.Euler(0, -90, 0);
-        }
-    }
-
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.CompareTag("Bush"))
-        {
-            _isInBush = true;
-            Debug.Log("Entered bush - speed increased!");
-        }
-    }
-
-    private void OnTriggerExit(Collider other)
-    {
-        if (other.CompareTag("Bush"))
-        {
-            _isInBush = false;
-            Debug.Log("Exited bush - speed will return to normal");
+            model.rotation = transform.rotation * Quaternion.Euler(0, -90, 0);
         }
     }
 }

@@ -2,20 +2,23 @@ using UnityEngine;
 
 public class Diamond : MonoBehaviour
 {
-    [Header("Настройки")]
+    [Header("Settings")]
     [SerializeField] private float detectRadius = 2f;
     [SerializeField] private LayerMask playerLayer;
     [SerializeField] private GameObject collectEffect;
 
     private bool collected = false;
 
+    public void ResetDiamond()
+    {
+        collected = false;
+    }
+
     private void Update()
     {
         if (collected) return;
 
-        Collider[] hits = Physics.OverlapSphere(transform.position, detectRadius, playerLayer);
-
-        foreach (Collider hit in hits)
+        if (Physics.CheckSphere(transform.position, detectRadius, playerLayer))
         {
             Collect();
         }
@@ -31,7 +34,7 @@ public class Diamond : MonoBehaviour
         }
 
         GameManager.Instance.DiamondCollected();
-        Destroy(gameObject);
+        gameObject.SetActive(false); // Вместо Destroy
     }
 
     private void OnDrawGizmosSelected()

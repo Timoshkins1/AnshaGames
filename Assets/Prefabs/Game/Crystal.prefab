@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 5752914362720017711}
   - component: {fileID: 5768871345013143389}
   - component: {fileID: 1653727401095384475}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: Cone
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -29,9 +29,9 @@ Transform:
   m_GameObject: {fileID: 5820890225703409110}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.497, y: 0, z: -0.503}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalPosition: {x: -0.772, y: 0, z: -0.806}
+  m_LocalScale: {x: 1.57, y: 1.57, z: 1.57}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 3218419170199281390}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -578,7 +578,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5038920242985965868}
   - component: {fileID: 8366990524419112154}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: Crystal
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -613,7 +613,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b503403bd0d9cf54bae87349133a4380, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  detectRadius: 0.91
+  detectRadius: 1
   playerLayer:
     serializedVersion: 2
     m_Bits: 8
@@ -628,7 +628,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3218419170199281390}
   - component: {fileID: 9182870020373695652}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: CrystalBody
   m_TagString: Untagged
   m_Icon: {fileID: 0}

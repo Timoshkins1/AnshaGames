@@ -13,4 +13,11 @@ public class PlayerAttack : ScriptableObject
     [Header("Damage Settings")]
     public int damagePerBullet = 10;
     public float knockbackForce = 5f;
+
+    [Header("Ammo System")]
+    public int maxAmmo = 3;
+    public float reloadTime = 1.5f;
+
+    [Header("Firing Settings")]
+    public float shotDelay = 0.2f; // Добавляем параметр задержки
 }
