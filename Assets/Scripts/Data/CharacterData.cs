@@ -7,10 +7,10 @@ public class CharacterData
     public string characterName;
     [TextArea] public string description;
     public string attackType;
-    public int attackTypeID;
-    public int damage;
-    public int health;
-    public int speed;
+    public string attackTypeID;
+    public string damage;
+    public string health;
+    public string speed;
     public GameObject characterPrefab;
 
     [Header("Spawn Settings")]

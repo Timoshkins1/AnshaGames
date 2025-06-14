@@ -7,39 +7,37 @@ public class Diamond : MonoBehaviour
     [SerializeField] private LayerMask playerLayer;
     [SerializeField] private GameObject collectEffect;
 
-    private bool collected = false;
-
-    public void ResetDiamond()
+    private void OnTriggerEnter(Collider other)
     {
-        collected = false;
-    }
-
-    private void Update()
-    {
-        if (collected) return;
-
-        if (Physics.CheckSphere(transform.position, detectRadius, playerLayer))
+        if (((1 << other.gameObject.layer) & playerLayer) != 0)
         {
-            Collect();
+            DiamondCarrier carrier = other.GetComponent<DiamondCarrier>();
+            if (carrier != null)
+            {
+                Collect(carrier);
+            }
         }
     }
 
-    private void Collect()
+    private void Collect(DiamondCarrier carrier)
     {
-        collected = true;
-
         if (collectEffect != null)
         {
             Instantiate(collectEffect, transform.position, Quaternion.identity);
         }
 
-        GameManager.Instance.DiamondCollected();
-        gameObject.SetActive(false); // Вместо Destroy
+        carrier.CollectDiamond();
+        gameObject.SetActive(false);
     }
 
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, detectRadius);
+    }
+
+    public void ResetDiamond()
+    {
+        // Метод для сброса состояния при возврате в пул
     }
 }

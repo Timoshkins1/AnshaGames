@@ -37,6 +37,10 @@ public class PlayerShooting : MonoBehaviour
     private void Start()
     {
         currentAmmo = attackConfig.maxAmmo;
+        if (ammoDisplay != null)
+        {
+            ammoDisplay.Initialize(attackConfig.maxAmmo); // Важно: сначала инициализация!
+        }
         UpdateAmmoDisplay();
     }
     private void Update()
@@ -75,15 +79,19 @@ public class PlayerShooting : MonoBehaviour
             isAiming = false;
         }
     }
-  
+
     private void HandleTimers()
     {
         // Обработка перезарядки
         if (currentAmmo < attackConfig.maxAmmo)
         {
             reloadTimer += Time.deltaTime;
-            if (ammoDisplay != null)
-                ammoDisplay.UpdateReloadProgress(reloadTimer / attackConfig.reloadTime);
+
+            // Сообщаем AmmoDisplay о перезарядке
+            if (ammoDisplay != null && !isReloading)
+            {
+                ammoDisplay.SetReloadingState(true);
+            }
 
             if (reloadTimer >= attackConfig.reloadTime)
             {
@@ -95,12 +103,14 @@ public class PlayerShooting : MonoBehaviour
                 {
                     isReloading = false;
                     if (ammoDisplay != null)
-                        ammoDisplay.UpdateReloadProgress(0f);
+                    {
+                        ammoDisplay.SetReloadingState(false);
+                    }
                 }
             }
         }
 
-        // Обработка задержки между выстрелами
+        // Обработка задержки между выстрелами остается без изменений
         if (!canShoot)
         {
             shotCooldownTimer += Time.deltaTime;
@@ -115,7 +125,7 @@ public class PlayerShooting : MonoBehaviour
     {
         if (ammoDisplay != null)
         {
-            ammoDisplay.UpdateAmmo(currentAmmo, attackConfig.maxAmmo);
+            ammoDisplay.UpdateAmmo(currentAmmo);
         }
     }
     private void FindNearestTarget()

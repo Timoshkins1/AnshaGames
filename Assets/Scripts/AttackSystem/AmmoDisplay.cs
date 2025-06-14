@@ -3,33 +3,50 @@ using UnityEngine.UI;
 
 public class AmmoDisplay : MonoBehaviour
 {
-    [SerializeField] private Image[] ammoIcons; // Массив иконок патронов
-    [SerializeField] private Color activeColor = Color.white;
-    [SerializeField] private Color reloadingColor = Color.gray;
-    [SerializeField] private Image reloadProgressBar; // Полоса перезарядки
+    [Header("Settings")]
+    [SerializeField] private GameObject _ammoIconPrefab;
+    [SerializeField] private Transform _iconsContainer;
+    [SerializeField] private Color _activeColor = Color.white;
+    [SerializeField] private Color _emptyColor = Color.gray;
+    [SerializeField] private Color _reloadingColor = Color.yellow; // Цвет иконки при перезарядке
 
-    public void UpdateAmmo(int currentAmmo, int maxAmmo)
+    private Image[] _ammoIcons;
+    private bool _isReloading;
+
+    public void Initialize(int maxAmmo)
     {
-        // Обновляем иконки патронов
-        for (int i = 0; i < ammoIcons.Length; i++)
+        foreach (Transform child in _iconsContainer)
         {
-            if (i < maxAmmo)
+            Destroy(child.gameObject);
+        }
+
+        _ammoIcons = new Image[maxAmmo];
+        for (int i = 0; i < maxAmmo; i++)
+        {
+            GameObject icon = Instantiate(_ammoIconPrefab, _iconsContainer);
+            _ammoIcons[i] = icon.GetComponent<Image>();
+            _ammoIcons[i].color = _activeColor;
+        }
+    }
+
+    public void UpdateAmmo(int currentAmmo)
+    {
+        for (int i = 0; i < _ammoIcons.Length; i++)
+        {
+            if (_isReloading && i == currentAmmo)
             {
-                ammoIcons[i].gameObject.SetActive(true);
-                ammoIcons[i].color = i < currentAmmo ? activeColor : reloadingColor;
+                // Текущий патрон, который перезаряжается
+                _ammoIcons[i].color = _reloadingColor;
             }
             else
             {
-                ammoIcons[i].gameObject.SetActive(false);
+                _ammoIcons[i].color = i < currentAmmo ? _activeColor : _emptyColor;
             }
         }
     }
 
-    public void UpdateReloadProgress(float progress)
+    public void SetReloadingState(bool isReloading)
     {
-        if (reloadProgressBar != null)
-        {
-            reloadProgressBar.fillAmount = progress;
-        }
+        _isReloading = isReloading;
     }
 }
