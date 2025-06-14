@@ -81,7 +81,7 @@ public class Bullet : MonoBehaviour
         if (ignoreLayers == (ignoreLayers | (1 << other.gameObject.layer)))
         {
             return true;
-        }
+        }  
 
         // Проверка по тегам
         foreach (string tag in ignoreTags)

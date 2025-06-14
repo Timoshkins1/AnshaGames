@@ -63,7 +63,7 @@ public class GameManager : MonoBehaviour
 
     private void UpdateUI()
     {
-        diamondsText.text = $"{diamondsCollected}/{diamondsToCollect}";
+        diamondsText.text = $"Алмазы: {diamondsCollected}/{diamondsToCollect}";
         waveText.text = $"Волна: {currentWave}";
     }
 

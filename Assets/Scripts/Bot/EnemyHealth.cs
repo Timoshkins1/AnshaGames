@@ -15,17 +15,16 @@ public class EnemyHealth : MonoBehaviour
 
     private int currentHealth;
     private Camera mainCamera;
-
+    private BrawlStarsBotAI botAI;
 
     public event System.Action OnDeath;
-    public event System.Action<int> OnDamageTaken;
 
     private void Start()
     {
         mainCamera = Camera.main;
         currentHealth = maxHealth;
+        botAI = GetComponent<BrawlStarsBotAI>();
 
-        // Инициализация UI
         if (healthSlider != null)
         {
             healthSlider.maxValue = maxHealth;
@@ -37,9 +36,7 @@ public class EnemyHealth : MonoBehaviour
     public void TakeDamage(int damage)
     {
         currentHealth -= damage;
-        OnDamageTaken?.Invoke(damage);
 
-        // Обновляем UI
         if (healthSlider != null) healthSlider.value = currentHealth;
         UpdateHealthText();
 
@@ -49,17 +46,34 @@ public class EnemyHealth : MonoBehaviour
         }
     }
 
+    private void Die()
+    {
+        // Отключаем коллайдеры
+        foreach (var collider in GetComponents<Collider>())
+            collider.enabled = false;
+
+        // Отключаем UI
+        if (healthCanvas != null)
+            healthCanvas.enabled = false;
+
+        // Если есть AI, используем его систему смерти
+        if (botAI != null)
+        {
+            botAI.HandleDeath();
+        }
+        else
+        {
+            // Фолбэк вариант
+            OnDeath?.Invoke();
+            Destroy(gameObject);
+        }
+    }
+
     private void UpdateHealthText()
     {
         if (healthText != null)
         {
             healthText.text = $"{currentHealth}/{maxHealth}";
         }
-    }
-
-    private void Die()
-    {
-        OnDeath?.Invoke();
-        Destroy(gameObject);
     }
 }
