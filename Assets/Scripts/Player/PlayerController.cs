@@ -8,6 +8,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private Transform model;
     [SerializeField] private float rotationSpeed = 10f;
+    [SerializeField] private Vector3 modelRotationOffset = new Vector3(0, -90, 0); // ƒобавлено: настраиваемый поворот модели
 
     [Header("Bush Boost Settings")]
     [SerializeField] private float bushSpeedMultiplier = 1.2f;
@@ -113,7 +114,7 @@ public class PlayerController : MonoBehaviour
 
         if (model != null)
         {
-            model.rotation = transform.rotation * Quaternion.Euler(0, -90, 0);
+            model.rotation = transform.rotation * Quaternion.Euler(modelRotationOffset);
         }
     }
 }

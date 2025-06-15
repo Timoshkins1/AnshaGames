@@ -20,7 +20,7 @@ public class Health : MonoBehaviour
     private void Start()
     {
         _currentHealth = _maxHealth;
-        healthBar.SetMaxHealth(_currentHealth);
+        healthBar.SetMaxHealth(_currentHealth); 
     }
     public void Initialize(HealthBar healthBar)
     {

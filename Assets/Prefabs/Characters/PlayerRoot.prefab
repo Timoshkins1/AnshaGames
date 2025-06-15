@@ -925,7 +925,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &780661708707700674
 Transform:
   m_ObjectHideFlags: 0
@@ -1009,6 +1009,7 @@ Transform:
   - {fileID: 4280703374170407878}
   - {fileID: 780661708707700674}
   - {fileID: 7188103559528356596}
+  - {fileID: 2376559738532336927}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &3626197017533654520
@@ -1038,8 +1039,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 5
-  model: {fileID: 780661708707700674}
+  model: {fileID: 2376559738532336927}
   rotationSpeed: 10
+  modelRotationOffset: {x: 0, y: 90, z: 0}
   bushSpeedMultiplier: 1.2
   boostFadeDuration: 0.5
   bushCheckInterval: 0.2
@@ -1058,14 +1060,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8fdd97c71e0a43f438f42744ce5b8ea2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  attackType: 1
   attackConfig: {fileID: 11400000, guid: 127380f8d2301134ea09b0efeba20c94, type: 2}
   firePoint: {fileID: 7188103559528356596}
-  joystick: {fileID: 0}
   joystickDeadZone: 0.1
   targetLayer:
     serializedVersion: 2
     m_Bits: 512
   targetSearchRadius: 10
+  fistPrefab: {fileID: 474797638876908477, guid: ff8c0022e8714e7499ea7fa607d98b26, type: 3}
+  meleeRange: 1.5
+  meleeDuration: 0.3
+  fistSpawnOffset: {x: 0, y: 0, z: 0.5}
+  joystick: {fileID: 0}
   ammoDisplay: {fileID: 0}
   shotDelay: 0.2
 --- !u!114 &4700840358105326763
@@ -2064,3 +2071,110 @@ SkinnedMeshRenderer:
     m_Center: {x: 3.1076512, y: 4.0179663, z: -0.4449525}
     m_Extent: {x: 6.407409, y: 9.030019, z: 7.5688167}
   m_DirtyAABB: 0
+--- !u!1001 &2842199078719877876
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1966395361489172402}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 099f44553f94fc243ac555d1f5d36d58, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 4.61
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 099f44553f94fc243ac555d1f5d36d58, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 4.61
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 099f44553f94fc243ac555d1f5d36d58, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 4.61
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 099f44553f94fc243ac555d1f5d36d58, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 099f44553f94fc243ac555d1f5d36d58, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 099f44553f94fc243ac555d1f5d36d58, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 099f44553f94fc243ac555d1f5d36d58, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 099f44553f94fc243ac555d1f5d36d58, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 099f44553f94fc243ac555d1f5d36d58, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 099f44553f94fc243ac555d1f5d36d58, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 099f44553f94fc243ac555d1f5d36d58, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 099f44553f94fc243ac555d1f5d36d58, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 90
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 099f44553f94fc243ac555d1f5d36d58, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 099f44553f94fc243ac555d1f5d36d58, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 099f44553f94fc243ac555d1f5d36d58, type: 3}
+      propertyPath: m_Name
+      value: Tima
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 099f44553f94fc243ac555d1f5d36d58, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8602534631880854485}
+  m_SourcePrefab: {fileID: 100100000, guid: 099f44553f94fc243ac555d1f5d36d58, type: 3}
+--- !u!4 &2376559738532336927 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 099f44553f94fc243ac555d1f5d36d58, type: 3}
+  m_PrefabInstance: {fileID: 2842199078719877876}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &3148276521924775845 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 099f44553f94fc243ac555d1f5d36d58, type: 3}
+  m_PrefabInstance: {fileID: 2842199078719877876}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &8602534631880854485
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3148276521924775845}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 04a8e7dad3536ce4ea63b6e2f42c4ce7, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0

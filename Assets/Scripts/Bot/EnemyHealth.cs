@@ -13,7 +13,7 @@ public class EnemyHealth : MonoBehaviour
     [SerializeField] private Canvas healthCanvas;
     [SerializeField] private Vector3 healthBarOffset = new Vector3(0, 2f, 0);
 
-    private int currentHealth;
+    private float currentHealth;
     private Camera mainCamera;
     private BrawlStarsBotAI botAI;
 
@@ -48,7 +48,7 @@ public class EnemyHealth : MonoBehaviour
         UpdateHealthText();
     }
 
-    public void TakeDamage(int damage)
+    public void TakeDamage(float damage)
     {
         currentHealth -= damage;
 

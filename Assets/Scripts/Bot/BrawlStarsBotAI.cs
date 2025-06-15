@@ -99,6 +99,12 @@ public class BrawlStarsBotAI : MonoBehaviour
                 Wander();
             }
         }
+
+        // Если агент не двигается (например, достиг цели), сбрасываем скорость
+        if (agent.velocity.magnitude < 0.1f)
+        {
+            animator.SetFloat("Speed", 0f);
+        }
     }
 
     private void Wander()
@@ -117,6 +123,11 @@ public class BrawlStarsBotAI : MonoBehaviour
                 }
             }
         }
+
+        // Добавляем обновление параметров аниматора
+        float currentSpeed = agent.velocity.magnitude;
+        animator.SetFloat("Speed", currentSpeed);
+        animator.SetBool("Running", false); // Убедимся, что running false при блуждании
     }
 
     private void ChasePlayer(bool running)

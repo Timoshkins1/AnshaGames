@@ -30,6 +30,11 @@ public class EnemySpawner : MonoBehaviour
     [SerializeField] private float damageIncreasePerWave = 0.1f;
     [SerializeField] private float runDetectionRangeIncreasePerWave = 0.05f;
 
+    [Header("Spawn Points Pool")]
+    [SerializeField] private Transform spawnPointsContainer;
+    [SerializeField] private float minDistanceToSpawnPoint = 15f;
+    [SerializeField] private bool useSpawnPointsPool = true;
+
     private Transform player;
     private int enemiesToSpawn;
     private int currentWave;
@@ -37,9 +42,10 @@ public class EnemySpawner : MonoBehaviour
     private float periodicSpawnTimer;
     private NavMeshHit navHit;
     private int spawnAttemptCount = 0;
-    private Vector3[] precomputedDirections = new Vector3[16]; // Увеличили до 16 направлений
+    private Vector3[] precomputedDirections = new Vector3[16];
     private List<GameObject> activeEnemies = new List<GameObject>();
     private int currentMaxEnemies;
+    private List<Transform> spawnPoints = new List<Transform>();
 
     public static EnemySpawner Instance { get; private set; }
 
@@ -56,6 +62,19 @@ public class EnemySpawner : MonoBehaviour
         }
 
         PrecomputeDirections();
+        InitializeSpawnPoints();
+    }
+
+    private void InitializeSpawnPoints()
+    {
+        if (spawnPointsContainer != null && useSpawnPointsPool)
+        {
+            foreach (Transform child in spawnPointsContainer)
+            {
+                spawnPoints.Add(child);
+            }
+            if (debugLogging) Debug.Log($"Initialized {spawnPoints.Count} spawn points");
+        }
     }
 
     public void SetPlayerTransform(Transform playerTransform)
@@ -79,7 +98,6 @@ public class EnemySpawner : MonoBehaviour
 
     private void PrecomputeDirections()
     {
-        // Увеличили количество направлений до 16 для более равномерного распределения
         for (int i = 0; i < precomputedDirections.Length; i++)
         {
             float angle = i * Mathf.PI * 2f / precomputedDirections.Length;
@@ -97,11 +115,10 @@ public class EnemySpawner : MonoBehaviour
             currentMaxEnemies = maxEnemiesPerWave;
         }
 
-        // Спавним больше врагов в начале волны
         int enemiesToSpawnNow = Mathf.Min(3 + (wave - 1) * 2, currentMaxEnemies - activeEnemies.Count);
         enemiesToSpawn = enemiesToSpawnNow;
 
-        spawnTimer = 0f; // Начинаем спавн сразу
+        spawnTimer = 0f;
         if (debugLogging) Debug.Log($"Starting wave {wave}. Max enemies: {currentMaxEnemies}");
     }
 
@@ -132,7 +149,6 @@ public class EnemySpawner : MonoBehaviour
         int availableSlots = currentMaxEnemies - activeEnemies.Count;
         if (availableSlots <= 0) return;
 
-        // Увеличиваем шанс спавна больше врагов на высоких волнах
         int maxSpawn = Mathf.Min(3 + currentWave / 3, availableSlots);
         int enemiesToSpawn = Random.Range(1, maxSpawn + 1);
 
@@ -147,46 +163,81 @@ public class EnemySpawner : MonoBehaviour
     {
         if (!enemyPrefab || !player || activeEnemies.Count >= currentMaxEnemies) return;
 
-        spawnAttemptCount = 0;
-
-        // Сначала пробуем предварительно вычисленные направления
-        for (int i = 0; i < precomputedDirections.Length && spawnAttemptCount < maxSpawnAttempts; i++)
+        // Сначала пробуем стандартный алгоритм спавна
+        if (TryStandardSpawn())
         {
-            // Добавляем небольшую случайность к направлению
-            Vector3 dir = (precomputedDirections[i] + Random.insideUnitSphere * 0.3f).normalized;
-            if (TrySpawnAtDirection(dir))
-                return;
+            return;
         }
 
-        // Затем пробуем полностью случайные направления
+        // Если не получилось - пробуем спавн на заготовленных точках
+        if (useSpawnPointsPool && spawnPoints.Count > 0)
+        {
+            TryFallbackSpawnFromPool();
+        }
+    }
+
+    private bool TryStandardSpawn()
+    {
+        spawnAttemptCount = 0;
+
+        // Пробуем предварительно вычисленные направления
+        for (int i = 0; i < precomputedDirections.Length && spawnAttemptCount < maxSpawnAttempts; i++)
+        {
+            Vector3 dir = (precomputedDirections[i] + Random.insideUnitSphere * 0.3f).normalized;
+            if (TrySpawnAtDirection(dir))
+                return true;
+        }
+
+        // Пробуем случайные направления
         while (spawnAttemptCount < maxSpawnAttempts)
         {
             Vector3 spawnDirection = Random.onUnitSphere;
-            spawnDirection.y = 0; // Обнуляем Y для 2D плоскости
+            spawnDirection.y = 0;
             spawnDirection.Normalize();
 
             if (TrySpawnAtDirection(spawnDirection))
-                return;
+                return true;
         }
 
-        if (debugLogging) Debug.LogWarning($"Failed to spawn after {maxSpawnAttempts} attempts");
+        return false;
+    }
+
+    private void TryFallbackSpawnFromPool()
+    {
+        // Создаем временный список доступных точек
+        List<Transform> availablePoints = new List<Transform>(spawnPoints);
+
+        // Пробуем точки в случайном порядке
+        while (availablePoints.Count > 0)
+        {
+            int randomIndex = Random.Range(0, availablePoints.Count);
+            Transform spawnPoint = availablePoints[randomIndex];
+            availablePoints.RemoveAt(randomIndex);
+
+            // Проверяем валидность позиции
+            if (IsValidSpawnPosition(spawnPoint.position, out _))
+            {
+                SpawnEnemy(spawnPoint.position);
+                if (debugLogging) Debug.Log($"Enemy spawned from fallback pool at {spawnPoint.position}");
+                return;
+            }
+        }
+
+        if (debugLogging) Debug.LogWarning("Failed to spawn using fallback spawn points");
     }
 
     private bool TrySpawnAtDirection(Vector3 direction)
     {
         spawnAttemptCount++;
 
-        // Более интеллектуальное вычисление позиции спавна
-        float distance = spawnRadius * (0.8f + Random.Range(0f, 0.4f)); // Вариация расстояния
+        float distance = spawnRadius * (0.8f + Random.Range(0f, 0.4f));
         Vector3 spawnPosition = player.position + direction * distance;
 
-        // Корректировка минимальной дистанции
         if (Vector3.Distance(spawnPosition, player.position) < minSpawnDistance)
         {
             spawnPosition = player.position + direction * minSpawnDistance;
         }
 
-        // Проверка позиции с более умными параметрами
         if (IsValidSpawnPosition(spawnPosition, out _))
         {
             SpawnEnemy(spawnPosition);
@@ -223,8 +274,6 @@ public class EnemySpawner : MonoBehaviour
     {
         if (wave <= 1) return;
 
-        float waveMultiplier = 1 + (wave - 1) * 0.1f;
-
         var health = enemy.GetComponent<EnemyHealth>();
         if (health != null)
         {
@@ -243,7 +292,6 @@ public class EnemySpawner : MonoBehaviour
 
     private bool IsValidSpawnPosition(Vector3 position, out string failReason)
     {
-        // Улучшенная проверка позиции
         if (!Physics.Raycast(position + Vector3.up * spawnHeightCheck, Vector3.down,
                            spawnHeightCheck * 2, groundLayer))
         {
@@ -292,7 +340,6 @@ public class EnemySpawner : MonoBehaviour
             Gizmos.color = new Color(1, 1, 0, 0.2f);
             Gizmos.DrawWireSphere(player.position, spawnRadius);
 
-            // Рисуем направления спавна для наглядности
             if (precomputedDirections != null && precomputedDirections.Length > 0)
             {
                 Gizmos.color = Color.cyan;
@@ -301,6 +348,19 @@ public class EnemySpawner : MonoBehaviour
                     Vector3 spawnPos = player.position + dir * spawnRadius;
                     Gizmos.DrawLine(player.position, spawnPos);
                     Gizmos.DrawSphere(spawnPos, 0.5f);
+                }
+            }
+        }
+
+        if (spawnPoints != null && spawnPoints.Count > 0)
+        {
+            Gizmos.color = Color.green;
+            foreach (var point in spawnPoints)
+            {
+                if (point != null)
+                {
+                    Gizmos.DrawSphere(point.position, 0.7f);
+                    Gizmos.DrawWireSphere(point.position, minDistanceToSpawnPoint);
                 }
             }
         }
