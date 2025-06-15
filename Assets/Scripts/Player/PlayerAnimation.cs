@@ -2,15 +2,42 @@ using UnityEngine;
 
 public class PlayerAnimation : MonoBehaviour
 {
-    [SerializeField] private Animator _animator;
-    [SerializeField] private FixedJoystick _joystick;
+    private Animator _animator;
+    public FixedJoystick _joystick;
+    private bool _initialized = false;
+
+    public void Initialize(FixedJoystick joystick)
+    {
+        _joystick = joystick;
+        _animator = GetComponentInChildren<Animator>();
+
+        if (_animator == null)
+        {
+            Debug.LogError("Animator not found in children!", this);
+            return;
+        }
+
+        if (_joystick == null)
+        {
+            Debug.LogError("Joystick reference is null!", this);
+            return;
+        }
+
+        _initialized = true;
+    }
 
     private void Update()
     {
-        // Проверяем, активен ли джойстик (есть ввод)
-        bool isRunning = _joystick.Horizontal != 0 || _joystick.Vertical != 0;
+        if (!_initialized) return;
 
-        // Передаем параметр в Animator
-        _animator.SetBool("IsRunning", isRunning);
+        // Безопасная проверка ввода
+        bool isRunning = (_joystick != null) &&
+                        (_joystick.Horizontal != 0 || _joystick.Vertical != 0);
+
+        // Безопасное обновление аниматора
+        if (_animator != null && _animator.isActiveAndEnabled)
+        {
+            _animator.SetBool("IsRunning", isRunning);
+        }
     }
 }

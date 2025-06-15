@@ -4,7 +4,7 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     [Header("Movement Settings")]
-    [SerializeField] private FixedJoystick moveJoystick;
+    private FixedJoystick moveJoystick;
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private Transform model;
     [SerializeField] private float rotationSpeed = 10f;
@@ -23,12 +23,22 @@ public class PlayerController : MonoBehaviour
     private float lastBushCheckTime;
     private Collider[] bushCheckCache = new Collider[1]; // Кэш для проверки кустов
 
+
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
         rb.freezeRotation = true;
         baseSpeed = moveSpeed;
         currentSpeed = baseSpeed;
+
+        if (moveJoystick == null && PlayerManager.Instance != null)
+        {
+            moveJoystick = PlayerManager.Instance.MovementJoystick;
+        }
+    }
+    public void Initialize(FixedJoystick joystick)
+    {
+        moveJoystick = joystick;
     }
 
     private void FixedUpdate()

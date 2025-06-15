@@ -20,21 +20,19 @@ public class DiamondPointer : MonoBehaviour
     private Transform nearestDiamond;
     private float lastUpdateTime;
     private bool isInitialized;
-
     private IEnumerator Start()
     {
         yield return new WaitUntil(() => DiamondSpawner.Instance != null);
 
-        if (playerTransform == null)
-        {
-            Debug.LogError("Player transform reference is missing!");
-            yield break;
-        }
+        //if (PlayerManager.Instance != null)
+        //{
+        //    playerTransform = PlayerManager.Instance.GetPlayerModelTransform();
+        //    isInitialized = playerTransform != null;
+        //}
 
-        if (pointerUI == null || pointerImage == null)
+        if (DiamondSpawner.Instance != null)
         {
-            Debug.LogError("UI references are missing!");
-            yield break;
+            DiamondSpawner.Instance.OnDiamondSpawned += HandleNewDiamondSpawned;
         }
 
         DiamondSpawner.Instance.OnDiamondSpawned += HandleNewDiamondSpawned;
@@ -42,7 +40,11 @@ public class DiamondPointer : MonoBehaviour
 
         UpdateNearestDiamond();
     }
-
+    public void SetPlayerTransform(Transform playerTransform)
+    {
+        this.playerTransform = playerTransform;
+        isInitialized = playerTransform != null;
+    }
     private void OnDestroy()
     {
         if (DiamondSpawner.Instance != null)

@@ -4,7 +4,8 @@ using System;
 public class Health : MonoBehaviour
 {
     [SerializeField] private float _maxHealth = 100f;
-    [SerializeField] private HealthBar healthBar;
+    public float MaxHealth => _maxHealth; // Добавляем public свойство
+    public HealthBar healthBar; // Делаем public для установки из PlayerManager
     private float _currentHealth;
 
 
@@ -21,7 +22,11 @@ public class Health : MonoBehaviour
         _currentHealth = _maxHealth;
         healthBar.SetMaxHealth(_currentHealth);
     }
-
+    public void Initialize(HealthBar healthBar)
+    {
+        this.healthBar = healthBar;
+        healthBar.SetMaxHealth(_maxHealth);
+    }
     public void TakeDamage(float damage)
     {
         _currentHealth -= damage;

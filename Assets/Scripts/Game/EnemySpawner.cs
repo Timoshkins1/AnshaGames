@@ -53,11 +53,21 @@ public class EnemySpawner : MonoBehaviour
 
         PrecomputeDirections();
     }
-
+    public void SetPlayerTransform(Transform playerTransform)
+    {
+        player = playerTransform;
+        if (debugLogging) Debug.Log("Player reference set in EnemySpawner");
+    }
     private void Start()
     {
-        player = GameObject.FindWithTag("Player").transform;
+        // Удаляем строку с поиском игрока
         if (debugLogging) Debug.Log("EnemySpawner initialized");
+
+        // Если PlayerManager уже существует, запрашиваем трансформ
+        if (PlayerManager.Instance != null)
+        {
+            SetPlayerTransform(PlayerManager.Instance.PlayerTransform);
+        }
     }
 
     private void PrecomputeDirections()

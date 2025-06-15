@@ -48,7 +48,19 @@ public class PlayerShooting : MonoBehaviour
         HandleTimers();
         HandleJoystickInput();
     }
+    public void Initialize(Joystick joystick, AmmoDisplay ammoDisplay)
+    {
+        this.joystick = joystick;
+        this.ammoDisplay = ammoDisplay;
 
+        // Инициализация боеприпасов
+        currentAmmo = attackConfig.maxAmmo;
+        if (this.ammoDisplay != null)
+        {
+            this.ammoDisplay.Initialize(attackConfig.maxAmmo);
+        }
+        UpdateAmmoDisplay();
+    }
     private void HandleJoystickInput()
     {
         Vector3 joystickDirection = new Vector3(joystick.Horizontal, 0, joystick.Vertical);
