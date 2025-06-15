@@ -10,6 +10,7 @@ public class EnemySpawner : MonoBehaviour
     [SerializeField] private float minSpawnDistance = 10f;
     [SerializeField] private int initialEnemies = 3;
     [SerializeField] private int enemiesIncreasePerWave = 2;
+    [SerializeField] private int maxEnemiesPerWave = 10;
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private LayerMask obstacleLayer;
     [SerializeField] private float spawnHeightCheck = 2f;
@@ -20,6 +21,7 @@ public class EnemySpawner : MonoBehaviour
     [SerializeField] private float spawnInterval = 3f;
     [SerializeField] private float waveCooldown = 5f;
     [SerializeField] private int maxSpawnAttempts = 10;
+    [SerializeField] private float periodicSpawnInterval = 8f;
 
     [Header("Enemy Scaling")]
     [SerializeField] private float healthIncreasePerWave = 0.1f;
@@ -32,10 +34,12 @@ public class EnemySpawner : MonoBehaviour
     private int enemiesToSpawn;
     private int currentWave;
     private float spawnTimer;
+    private float periodicSpawnTimer;
     private NavMeshHit navHit;
     private int spawnAttemptCount = 0;
-    private Vector3[] precomputedDirections = new Vector3[8]; // Предварительно вычисленные направления
+    private Vector3[] precomputedDirections = new Vector3[16]; // Увеличили до 16 направлений
     private List<GameObject> activeEnemies = new List<GameObject>();
+    private int currentMaxEnemies;
 
     public static EnemySpawner Instance { get; private set; }
 
@@ -53,39 +57,52 @@ public class EnemySpawner : MonoBehaviour
 
         PrecomputeDirections();
     }
+
     public void SetPlayerTransform(Transform playerTransform)
     {
         player = playerTransform;
         if (debugLogging) Debug.Log("Player reference set in EnemySpawner");
     }
+
     private void Start()
     {
-        // Удаляем строку с поиском игрока
         if (debugLogging) Debug.Log("EnemySpawner initialized");
 
-        // Если PlayerManager уже существует, запрашиваем трансформ
         if (PlayerManager.Instance != null)
         {
             SetPlayerTransform(PlayerManager.Instance.PlayerTransform);
         }
+
+        periodicSpawnTimer = periodicSpawnInterval;
+        currentMaxEnemies = initialEnemies;
     }
 
     private void PrecomputeDirections()
     {
-        // Предварительно вычисляем 8 основных направлений для спавна
-        for (int i = 0; i < 8; i++)
+        // Увеличили количество направлений до 16 для более равномерного распределения
+        for (int i = 0; i < precomputedDirections.Length; i++)
         {
-            float angle = i * Mathf.PI * 2f / 8;
-            precomputedDirections[i] = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle));
+            float angle = i * Mathf.PI * 2f / precomputedDirections.Length;
+            precomputedDirections[i] = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)).normalized;
         }
     }
 
     public void StartWave(int wave)
     {
         currentWave = wave;
-        enemiesToSpawn = initialEnemies + (wave - 1) * enemiesIncreasePerWave;
-        spawnTimer = spawnInterval; // Начинаем спавн сразу
-        if (debugLogging) Debug.Log($"Starting wave {wave}");
+        currentMaxEnemies = initialEnemies + (wave - 1) * enemiesIncreasePerWave;
+
+        if (maxEnemiesPerWave > 0 && currentMaxEnemies > maxEnemiesPerWave)
+        {
+            currentMaxEnemies = maxEnemiesPerWave;
+        }
+
+        // Спавним больше врагов в начале волны
+        int enemiesToSpawnNow = Mathf.Min(3 + (wave - 1) * 2, currentMaxEnemies - activeEnemies.Count);
+        enemiesToSpawn = enemiesToSpawnNow;
+
+        spawnTimer = 0f; // Начинаем спавн сразу
+        if (debugLogging) Debug.Log($"Starting wave {wave}. Max enemies: {currentMaxEnemies}");
     }
 
     private void Update()
@@ -101,24 +118,52 @@ public class EnemySpawner : MonoBehaviour
                 enemiesToSpawn--;
             }
         }
+
+        periodicSpawnTimer += Time.deltaTime;
+        if (periodicSpawnTimer >= periodicSpawnInterval && activeEnemies.Count < currentMaxEnemies)
+        {
+            periodicSpawnTimer = 0f;
+            SpawnPeriodicEnemies();
+        }
+    }
+
+    private void SpawnPeriodicEnemies()
+    {
+        int availableSlots = currentMaxEnemies - activeEnemies.Count;
+        if (availableSlots <= 0) return;
+
+        // Увеличиваем шанс спавна больше врагов на высоких волнах
+        int maxSpawn = Mathf.Min(3 + currentWave / 3, availableSlots);
+        int enemiesToSpawn = Random.Range(1, maxSpawn + 1);
+
+        for (int i = 0; i < enemiesToSpawn; i++)
+        {
+            TrySpawnEnemy();
+        }
+        if (debugLogging) Debug.Log($"Periodic spawn: {enemiesToSpawn} enemies");
     }
 
     private void TrySpawnEnemy()
     {
-        if (!enemyPrefab || !player) return;
+        if (!enemyPrefab || !player || activeEnemies.Count >= currentMaxEnemies) return;
 
-        // Пробуем предварительно вычисленные направления сначала
+        spawnAttemptCount = 0;
+
+        // Сначала пробуем предварительно вычисленные направления
         for (int i = 0; i < precomputedDirections.Length && spawnAttemptCount < maxSpawnAttempts; i++)
         {
-            if (TrySpawnAtDirection(precomputedDirections[i]))
+            // Добавляем небольшую случайность к направлению
+            Vector3 dir = (precomputedDirections[i] + Random.insideUnitSphere * 0.3f).normalized;
+            if (TrySpawnAtDirection(dir))
                 return;
         }
 
-        // Если не получилось, пробуем случайные направления
+        // Затем пробуем полностью случайные направления
         while (spawnAttemptCount < maxSpawnAttempts)
         {
-            Vector2 randomCircle = Random.insideUnitCircle.normalized;
-            Vector3 spawnDirection = new Vector3(randomCircle.x, 0f, randomCircle.y);
+            Vector3 spawnDirection = Random.onUnitSphere;
+            spawnDirection.y = 0; // Обнуляем Y для 2D плоскости
+            spawnDirection.Normalize();
 
             if (TrySpawnAtDirection(spawnDirection))
                 return;
@@ -130,13 +175,18 @@ public class EnemySpawner : MonoBehaviour
     private bool TrySpawnAtDirection(Vector3 direction)
     {
         spawnAttemptCount++;
-        Vector3 spawnPosition = player.position + direction * (spawnRadius + Random.Range(0f, 5f));
 
+        // Более интеллектуальное вычисление позиции спавна
+        float distance = spawnRadius * (0.8f + Random.Range(0f, 0.4f)); // Вариация расстояния
+        Vector3 spawnPosition = player.position + direction * distance;
+
+        // Корректировка минимальной дистанции
         if (Vector3.Distance(spawnPosition, player.position) < minSpawnDistance)
         {
             spawnPosition = player.position + direction * minSpawnDistance;
         }
 
+        // Проверка позиции с более умными параметрами
         if (IsValidSpawnPosition(spawnPosition, out _))
         {
             SpawnEnemy(spawnPosition);
@@ -150,14 +200,30 @@ public class EnemySpawner : MonoBehaviour
         var enemy = Instantiate(enemyPrefab, position, Quaternion.identity);
         ApplyWaveStats(enemy, currentWave);
         activeEnemies.Add(enemy);
-        if (debugLogging) Debug.Log($"Enemy spawned at {position}");
+
+        var health = enemy.GetComponent<EnemyHealth>();
+        if (health != null)
+        {
+            health.OnDeath += () => RemoveEnemy(enemy);
+        }
+
+        if (debugLogging) Debug.Log($"Enemy spawned at {position}. Total enemies: {activeEnemies.Count}");
+    }
+
+    private void RemoveEnemy(GameObject enemy)
+    {
+        if (activeEnemies.Contains(enemy))
+        {
+            activeEnemies.Remove(enemy);
+            if (debugLogging) Debug.Log($"Enemy removed. Total enemies: {activeEnemies.Count}");
+        }
     }
 
     private void ApplyWaveStats(GameObject enemy, int wave)
     {
         if (wave <= 1) return;
 
-        float waveMultiplier = 1 + (wave - 1) * 0.1f; // Общий множитель для оптимизации вычислений
+        float waveMultiplier = 1 + (wave - 1) * 0.1f;
 
         var health = enemy.GetComponent<EnemyHealth>();
         if (health != null)
@@ -177,7 +243,7 @@ public class EnemySpawner : MonoBehaviour
 
     private bool IsValidSpawnPosition(Vector3 position, out string failReason)
     {
-        // Проверка земли
+        // Улучшенная проверка позиции
         if (!Physics.Raycast(position + Vector3.up * spawnHeightCheck, Vector3.down,
                            spawnHeightCheck * 2, groundLayer))
         {
@@ -185,22 +251,20 @@ public class EnemySpawner : MonoBehaviour
             return false;
         }
 
-        // Проверка препятствий
-        if (Physics.CheckSphere(position, spawnCheckRadius, obstacleLayer))
+        Collider[] colliders = Physics.OverlapSphere(position, spawnCheckRadius, obstacleLayer);
+        if (colliders.Length > 0)
         {
             failReason = "Obstacle";
             return false;
         }
 
-        // Проверка NavMesh
         if (!NavMesh.SamplePosition(position, out navHit, spawnCheckRadius, NavMesh.AllAreas))
         {
             failReason = "No NavMesh";
             return false;
         }
 
-        // Проверка расстояния
-        if ((player.position - position).sqrMagnitude < minSpawnDistance * minSpawnDistance)
+        if (Vector3.Distance(player.position, position) < minSpawnDistance)
         {
             failReason = "Too close";
             return false;
@@ -227,6 +291,18 @@ public class EnemySpawner : MonoBehaviour
             Gizmos.DrawWireSphere(player.position, minSpawnDistance);
             Gizmos.color = new Color(1, 1, 0, 0.2f);
             Gizmos.DrawWireSphere(player.position, spawnRadius);
+
+            // Рисуем направления спавна для наглядности
+            if (precomputedDirections != null && precomputedDirections.Length > 0)
+            {
+                Gizmos.color = Color.cyan;
+                foreach (var dir in precomputedDirections)
+                {
+                    Vector3 spawnPos = player.position + dir * spawnRadius;
+                    Gizmos.DrawLine(player.position, spawnPos);
+                    Gizmos.DrawSphere(spawnPos, 0.5f);
+                }
+            }
         }
     }
 }
