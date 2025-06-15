@@ -60,7 +60,7 @@ MonoBehaviour:
   MovementSpeed: 2
   attack1Delay: 0.3
   attack2Delay: 0.4
-  damage: 10
+  damage: 30
   attackCooldown: 2
   player: {fileID: 0}
   animator: {fileID: 8189392441435412636}

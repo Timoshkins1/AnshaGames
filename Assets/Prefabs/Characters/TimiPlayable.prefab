@@ -1026,6 +1026,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _maxHealth: 100
+  _healthIncreasePerUpgrade: 20
+  _healthRegenPercentPerSecond: 1
   healthBar: {fileID: 0}
 --- !u!114 &5835802989028501100
 MonoBehaviour:

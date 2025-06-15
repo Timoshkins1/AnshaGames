@@ -1,13 +1,16 @@
 using UnityEngine;
 using System;
-
+//Здоровье игрока
 public class Health : MonoBehaviour
 {
     [SerializeField] private float _maxHealth = 100f;
-    [SerializeField] private float _healthIncreasePerUpgrade = 20f; // New: Health increase amount per power-up
+    [SerializeField] private float _healthIncreasePerUpgrade = 20f;
+    [SerializeField] private float _healthRegenPercentPerSecond = 1f; // Новый параметр: процент восстановления в секунду
+
     public float MaxHealth => _maxHealth;
     public HealthBar healthBar;
     private float _currentHealth;
+    private float _timeSinceLastHeal = 0f;
 
     public event Action OnDeath;
     public event Action<float> OnHealthChanged;
@@ -26,6 +29,35 @@ public class Health : MonoBehaviour
             healthBar.SetMaxHealth(_maxHealth);
             healthBar.SetHealth(_currentHealth);
         }
+    }
+
+    private void Update()
+    {
+        // Регенерация здоровья каждую секунду
+        _timeSinceLastHeal += Time.deltaTime;
+
+        if (_timeSinceLastHeal >= 1f)
+        {
+            HealPercent(_healthRegenPercentPerSecond);
+            _timeSinceLastHeal = 0f;
+        }
+    }
+
+    // Новый метод: восстановление здоровья по проценту от максимального здоровья
+    private void HealPercent(float percent)
+    {
+        if (_currentHealth >= _maxHealth) return;
+
+        float healAmount = _maxHealth * (percent / 100f);
+        _currentHealth += healAmount;
+        _currentHealth = Mathf.Clamp(_currentHealth, 0, _maxHealth);
+
+        if (healthBar != null)
+        {
+            healthBar.SetHealth(_currentHealth);
+        }
+
+        OnHealthChanged?.Invoke(_currentHealth);
     }
 
     public void Initialize(HealthBar healthBar)
@@ -67,11 +99,10 @@ public class Health : MonoBehaviour
         OnHealthChanged?.Invoke(_currentHealth);
     }
 
-    // New method for power-up system
     public void IncreaseMaxHealth(float amount)
     {
         _maxHealth += amount;
-        _currentHealth += amount; // Also increase current health
+        _currentHealth += amount;
 
         if (healthBar != null)
         {
@@ -82,7 +113,6 @@ public class Health : MonoBehaviour
         OnHealthChanged?.Invoke(_currentHealth);
     }
 
-    // Alternative version that uses predefined increase amount
     public void UpgradeMaxHealth()
     {
         IncreaseMaxHealth(_healthIncreasePerUpgrade);

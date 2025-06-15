@@ -79,10 +79,10 @@ public class PowerUpManager : MonoBehaviour
 
         switch (powerUp.powerUpType)
         {
-            //case PowerUpType.Health:
-            //    var health = player.GetComponent<Health>();
-            //    if (health != null) health.IncreaseMaxHealth(powerUp.value);
-            //    break;
+            case PowerUpType.Health:
+                var health = player.GetComponent<Health>();
+                if (health != null) health.IncreaseMaxHealth(powerUp.value);
+                break;
 
             case PowerUpType.Damage:
                 var shooting = player.GetComponent<PlayerShooting>();

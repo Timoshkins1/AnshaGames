@@ -31,6 +31,7 @@ public class BrawlStarsBotAI : MonoBehaviour
     private bool isAttacking = false;
     private int attackType = 0;
     private EnemyHealth enemyHealth;
+    private Health playerHealth; // Ссылка на здоровье игрока
 
     void Start()
     {
@@ -44,6 +45,16 @@ public class BrawlStarsBotAI : MonoBehaviour
 
         if (player == null)
             player = GameObject.FindGameObjectWithTag("Player").transform;
+
+        // Получаем компонент Health игрока
+        if (player != null)
+        {
+            playerHealth = player.GetComponent<Health>();
+            if (playerHealth == null)
+            {
+                Debug.LogWarning("Player doesn't have Health component!");
+            }
+        }
 
         agent = GetComponent<NavMeshAgent>();
 
@@ -73,6 +84,7 @@ public class BrawlStarsBotAI : MonoBehaviour
             enemyHealth.OnDeath -= HandleExternalDeath;
         }
     }
+
     void Update()
     {
         if (isDead || !agent.enabled || !agent.isOnNavMesh) return;
@@ -163,17 +175,35 @@ public class BrawlStarsBotAI : MonoBehaviour
 
     private void DoDamage()
     {
-        if (isDead) return;
+        if (isDead || playerHealth == null) return;
 
-        if (Vector3.Distance(transform.position, player.position) <= attackRange * 1.2f)
+        // Проверяем расстояние до игрока и прямой видимость
+        if (Vector3.Distance(transform.position, player.position) <= attackRange * 1.2f && HasLineOfSightToPlayer())
         {
+            // Включаем коллайдер для атаки (если используется физический урон)
             if (hitCollider != null)
             {
                 hitCollider.enabled = true;
                 Invoke("DisableHitCollider", 0.1f);
             }
-            Debug.Log("Zombie attacks player!");
+
+            // Наносим урон игроку
+            playerHealth.TakeDamage(damage);
+            Debug.Log($"Zombie attacked player for {damage} damage!");
         }
+    }
+
+    // Проверка прямой видимости до игрока
+    private bool HasLineOfSightToPlayer()
+    {
+        RaycastHit hit;
+        Vector3 direction = player.position - transform.position;
+
+        if (Physics.Raycast(transform.position + Vector3.up, direction.normalized, out hit, attackRange * 1.2f))
+        {
+            return hit.collider.transform == player;
+        }
+        return false;
     }
 
     private void DisableHitCollider()
@@ -210,12 +240,12 @@ public class BrawlStarsBotAI : MonoBehaviour
 
         StartCoroutine(DestroyAfterAnimation(deathType));
     }
+
     private void HandleExternalDeath()
     {
         // Если смерть вызвана из EnemyHealth
         HandleDeath();
     }
-
 
     private IEnumerator DestroyAfterAnimation(int deathType)
     {
