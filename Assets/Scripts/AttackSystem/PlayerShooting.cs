@@ -28,13 +28,14 @@ public class PlayerShooting : MonoBehaviour
     [Header("Timing Settings")]
     public float shotDelay = 0.2f;
 
-    // Private variables
     private bool isAiming = false;
     private Vector3 attackDirection;
     private int currentAmmo;
     private float shotCooldownTimer;
     private bool canShoot = true;
     private Collider[] targetCollidersCache = new Collider[20];
+    private bool isReloading = false;
+    private float reloadTimer;
 
     private void Start()
     {
@@ -55,7 +56,7 @@ public class PlayerShooting : MonoBehaviour
         {
             ammoDisplay.Initialize(attackConfig.maxAmmo);
             ammoDisplay.UpdateAmmo(currentAmmo);
-            ammoDisplay.gameObject.SetActive(attackType == AttackType.Ranged);
+            ammoDisplay.gameObject.SetActive(true);
         }
     }
 
@@ -63,6 +64,47 @@ public class PlayerShooting : MonoBehaviour
     {
         HandleCooldown();
         HandleAttackInput();
+        HandleReload();
+    }
+
+    private void HandleReload()
+    {
+        if (currentAmmo < attackConfig.maxAmmo && !isReloading)
+        {
+            isReloading = true;
+            reloadTimer = attackConfig.reloadTime;
+            if (ammoDisplay != null)
+            {
+                ammoDisplay.SetReloadingState(true);
+            }
+        }
+
+        if (isReloading)
+        {
+            reloadTimer -= Time.deltaTime;
+            if (reloadTimer <= 0)
+            {
+                currentAmmo++;
+                UpdateAmmoDisplay();
+                isReloading = false;
+
+                if (ammoDisplay != null)
+                {
+                    ammoDisplay.SetReloadingState(false);
+                }
+
+                // ≈сли еще не полный боезапас, начинаем перезар€дку следующего зар€да
+                if (currentAmmo < attackConfig.maxAmmo)
+                {
+                    isReloading = true;
+                    reloadTimer = attackConfig.reloadTime;
+                    if (ammoDisplay != null)
+                    {
+                        ammoDisplay.SetReloadingState(true);
+                    }
+                }
+            }
+        }
     }
 
     private void HandleCooldown()
@@ -87,9 +129,9 @@ public class PlayerShooting : MonoBehaviour
             isAiming = true;
             attackDirection = joystickDirection.normalized;
         }
-        else if (isAiming && canShoot)
+        else if (isAiming && canShoot && currentAmmo > 0)
         {
-            if (attackType == AttackType.Ranged && currentAmmo > 0)
+            if (attackType == AttackType.Ranged)
             {
                 PerformRangedAttack();
             }
@@ -98,6 +140,13 @@ public class PlayerShooting : MonoBehaviour
                 PerformMeleeAttack();
             }
 
+            currentAmmo--;
+            UpdateAmmoDisplay();
+            canShoot = false;
+            isAiming = false;
+        }
+        else if (isAiming && currentAmmo <= 0)
+        {
             isAiming = false;
         }
     }
@@ -118,10 +167,6 @@ public class PlayerShooting : MonoBehaviour
                 CreateBullet(bulletDirection);
             }
         }
-
-        currentAmmo--;
-        UpdateAmmoDisplay();
-        canShoot = false;
     }
 
     private void PerformMeleeAttack()
@@ -131,22 +176,19 @@ public class PlayerShooting : MonoBehaviour
 
         if (fist.TryGetComponent<MeleeFist>(out var meleeFist))
         {
-            meleeFist.InitializeWithAmmo(
-                attackDirection.normalized,    // Vector3 direction
-                meleeRange,                   // float range
-                attackConfig.damagePerBullet, // float damage
-                attackConfig.knockbackForce,  // float knockbackForce
-                meleeDuration,                // float duration
-                gameObject,                   // GameObject owner
-                attackConfig                  // PlayerAttack config
+            meleeFist.Initialize(
+                attackDirection.normalized,
+                meleeRange,
+                attackConfig.damagePerBullet,
+                attackConfig.knockbackForce,
+                meleeDuration,
+                gameObject
             );
         }
         else
         {
             Destroy(fist, meleeDuration);
         }
-
-        canShoot = false;
     }
 
     private void FindNearestTarget()
@@ -215,13 +257,8 @@ public class PlayerShooting : MonoBehaviour
         ).normalized;
     }
 
-    // ћетод дл€ переключени€ типа атаки через инспектор или код
     public void SetAttackType(AttackType type)
     {
         attackType = type;
-        if (ammoDisplay != null)
-        {
-            ammoDisplay.gameObject.SetActive(attackType == AttackType.Ranged);
-        }
     }
 }

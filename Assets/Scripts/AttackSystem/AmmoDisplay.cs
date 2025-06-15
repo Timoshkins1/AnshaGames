@@ -29,18 +29,22 @@ public class AmmoDisplay : MonoBehaviour
         }
     }
 
-    public void UpdateAmmo(int currentAmmo)
+    public void UpdateAmmo(int currentAmmo, float reloadProgress = 0)
     {
         for (int i = 0; i < _ammoIcons.Length; i++)
         {
-            if (_isReloading && i == currentAmmo)
+            if (i < currentAmmo)
             {
-                // “екущий патрон, который перезар€жаетс€
-                _ammoIcons[i].color = _reloadingColor;
+                _ammoIcons[i].color = _activeColor;
             }
             else
             {
-                _ammoIcons[i].color = i < currentAmmo ? _activeColor : _emptyColor;
+                _ammoIcons[i].color = reloadProgress > 0 ? _reloadingColor : _emptyColor;
+
+                if (reloadProgress > 0)
+                {
+                    _ammoIcons[i].fillAmount = 1f - reloadProgress;
+                }
             }
         }
     }

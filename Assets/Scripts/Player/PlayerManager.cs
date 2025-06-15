@@ -1,8 +1,14 @@
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerManager : MonoBehaviour
 {
     public static PlayerManager Instance { get; private set; }
+
+    [Header("UI References")]
+    [SerializeField] private Image playerImageUI;  // Картинка в UI (на Canvas)
+    [SerializeField] private TextMeshProUGUI playerNameUI;   // Текст имени в UI (на Canvas)
 
     [Header("Settings")]
     [SerializeField] private GameObject[] playerPrefabs;
@@ -13,7 +19,8 @@ public class PlayerManager : MonoBehaviour
     [SerializeField] private AmmoDisplay ammoDisplay;
     [SerializeField] private EnemySpawner enemySpawner;
     [SerializeField] private CameraFollow cameraFollow;
-    // Добавляем публичные свойства для доступа
+    [SerializeField] private PlayerUI playerUI; // Ссылка на UI компонент
+
     public FixedJoystick MovementJoystick => movementJoystick;
     public Joystick ShootingJoystick => shootingJoystick;
     public Transform PlayerTransform => currentPlayer?.transform;
@@ -31,10 +38,12 @@ public class PlayerManager : MonoBehaviour
             Destroy(gameObject);
         }
     }
+
     private void Start()
     {
         PlayerManager.Instance.SpawnPlayer(0);
     }
+
     public void SpawnPlayer(int playerIndex)
     {
         if (currentPlayer != null)
@@ -44,17 +53,18 @@ public class PlayerManager : MonoBehaviour
 
         currentPlayer = Instantiate(playerPrefabs[playerIndex], spawnPoint.position, spawnPoint.rotation);
         InitializePlayerComponents(currentPlayer);
+
+        // Обновляем UI при спавне нового игрока
+        UpdatePlayerUI(currentPlayer);
     }
 
     private void InitializePlayerComponents(GameObject player)
     {
-        // Получаем все необходимые компоненты
         var health = player.GetComponent<Health>();
         var controller = player.GetComponent<PlayerController>();
         var shooting = player.GetComponent<PlayerShooting>();
         var animation = player.GetComponent<PlayerAnimation>();
 
-        // Устанавливаем зависимости через методы, а не напрямую в поля
         if (health != null && healthBar != null)
         {
             health.Initialize(healthBar);
@@ -73,25 +83,37 @@ public class PlayerManager : MonoBehaviour
         if (animation != null)
         {
             animation.Initialize(movementJoystick);
-
-            // Дополнительная проверка после инициализации
-            if (animation._joystick == null)
-            {
-                Debug.LogError("Failed to initialize joystick in PlayerAnimation!", player);
-            }
         }
+
         if (enemySpawner != null)
         {
             enemySpawner.SetPlayerTransform(PlayerTransform);
         }
-        // Передаем трансформ игрока камере
+
         if (cameraFollow != null)
         {
             cameraFollow.SetPlayerTransform(player.transform);
         }
-        else
+       
+    }
+
+    /// <summary>
+    /// Обновляет UI на основе данных игрока.
+    /// </summary>
+    private void UpdatePlayerUI(GameObject player)
+    {
+        var playerUI = player.GetComponent<PlayerUI>(); // Получаем данные игрока
+        if (playerUI != null)
         {
-            Debug.LogWarning("CameraFollow reference is not set in PlayerManager!");
+            if (playerImageUI != null)
+            {
+                playerImageUI.sprite = playerUI.GetPlayerSprite();
+            }
+
+            if (playerNameUI != null)
+            {
+                playerNameUI.text = playerUI.GetPlayerName();
+            }
         }
     }
 }

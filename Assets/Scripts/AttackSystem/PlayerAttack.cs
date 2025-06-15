@@ -17,6 +17,7 @@ public class PlayerAttack : ScriptableObject
     [Header("Ammo System")]
     public int maxAmmo = 3;
     public float reloadTime = 1.5f;
+    public bool gradualReload = true; // Постепенная перезарядка
 
     [Header("Firing Settings")]
     public float shotDelay = 0.2f; // Добавляем параметр задержки
