@@ -8989,7 +8989,7 @@ MonoBehaviour:
   _hideYPosition: -6
   _showYPosition: 38
   _characters:
-  - characterID: 1
+  - characterID: 0
     characterName: Z4har
     description: "\u0420\u043E\u043B\u044C: \u0423\u043D\u0438\u0432\u0435\u0440\u0441\u0430\u043B\u044C\u043D\u044B\u0439
       \u0431\u043E\u0435\u0446, \u0441\u043F\u043E\u0441\u043E\u0431\u043D\u044B\u0439
@@ -9020,7 +9020,7 @@ MonoBehaviour:
     characterPrefab: {fileID: 2816681950003984872, guid: 52c764a2f71ceb54f8ec785c1d1f7c8b, type: 3}
     spawnPositionOffset: {x: 0, y: 0, z: 0}
     spawnRotation: {x: 0, y: 70, z: 0}
-  - characterID: 1
+  - characterID: 2
     characterName: Timi
     description: "\u0420\u043E\u043B\u044C: \u041E\u0441\u043D\u043E\u0432\u043D\u043E\u0439
       \u0443\u0440\u043E\u043D \u0432 \u0431\u043B\u0438\u0436\u043D\u0435\u043C

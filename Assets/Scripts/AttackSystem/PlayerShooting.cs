@@ -25,6 +25,11 @@ public class PlayerShooting : MonoBehaviour
     public Joystick joystick;
     public AmmoDisplay ammoDisplay;
 
+    [Header("Animation Settings")]
+    [SerializeField] private Animator _animator;
+    [SerializeField] private string attackTriggerName = "Attack";
+    [SerializeField] private Transform model; // Ссылка на модель для поворота
+
     [Header("Timing Settings")]
     public float shotDelay = 0.2f;
 
@@ -128,6 +133,7 @@ public class PlayerShooting : MonoBehaviour
         {
             isAiming = true;
             attackDirection = joystickDirection.normalized;
+           
         }
         else if (isAiming && canShoot && currentAmmo > 0)
         {
@@ -167,13 +173,21 @@ public class PlayerShooting : MonoBehaviour
                 CreateBullet(bulletDirection);
             }
         }
+        // Получаем контроллер игрока
+        var playerController = GetComponent<PlayerController>();
+        if (playerController != null)
+        {
+            playerController.HandleAttackRotation(attackDirection);
+        }
     }
 
     private void PerformMeleeAttack()
     {
+        FindNearestTarget();
         Vector3 spawnPosition = transform.position + transform.TransformDirection(fistSpawnOffset);
         GameObject fist = Instantiate(fistPrefab, spawnPosition, Quaternion.identity);
 
+     
         if (fist.TryGetComponent<MeleeFist>(out var meleeFist))
         {
             meleeFist.Initialize(
@@ -189,8 +203,18 @@ public class PlayerShooting : MonoBehaviour
         {
             Destroy(fist, meleeDuration);
         }
+        // Получаем контроллер игрока
+        var playerController = GetComponent<PlayerController>();
+        if (playerController != null)
+        {
+            playerController.HandleAttackRotation(attackDirection);
+        }
     }
-
+    public void UpdateAmmoCapacity()
+    {
+        currentAmmo = attackConfig.maxAmmo;
+        UpdateAmmoDisplay();
+    }
     private void FindNearestTarget()
     {
         Transform nearestTarget = null;

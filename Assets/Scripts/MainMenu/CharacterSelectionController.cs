@@ -95,6 +95,12 @@ public class CharacterSelectionController : MonoBehaviour
 
         UpdateConfirmButton();
         Debug.Log($"Выбран персонаж ID: {_selectedCharacterID}");
+
+        // Немедленно передаем выбранный ID в PlayerManager
+        if (PlayerManager.Instance != null)
+        {
+            PlayerManager.Instance.SpawnPlayer(_selectedCharacterID);
+        }
     }
 
     private IEnumerator SwitchCharacterCoroutine(int newIndex)

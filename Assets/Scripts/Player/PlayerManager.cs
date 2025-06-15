@@ -41,7 +41,17 @@ public class PlayerManager : MonoBehaviour
 
     private void Start()
     {
-        PlayerManager.Instance.SpawnPlayer(0);
+        // Получаем сохраненный ID персонажа
+        int selectedCharacterID = PlayerPrefs.GetInt("SelectedCharacterID", 0);
+
+        // Проверяем, чтобы индекс был в допустимых пределах
+        if (selectedCharacterID < 0 || selectedCharacterID >= playerPrefabs.Length)
+        {
+            selectedCharacterID = 0;
+            Debug.LogWarning("Некорректный ID персонажа. Используется значение по умолчанию: 0");
+        }
+
+        SpawnPlayer(selectedCharacterID);
     }
 
     public void SpawnPlayer(int playerIndex)

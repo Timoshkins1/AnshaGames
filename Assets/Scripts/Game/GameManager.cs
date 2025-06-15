@@ -59,6 +59,12 @@ public class GameManager : MonoBehaviour
         UpdateUI();
         DiamondSpawner.Instance.SpawnWave(diamondsToCollect);
         EnemySpawner.Instance.StartWave(currentWave);
+
+        // Show power-ups after first wave
+        if (currentWave > 1)
+        {
+            PowerUpManager.Instance.ShowPowerUpSelection();
+        }
     }
 
     private void UpdateUI()

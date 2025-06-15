@@ -5,6 +5,7 @@ public class PlayerAnimation : MonoBehaviour
     private Animator _animator;
     public FixedJoystick _joystick;
     private bool _initialized = false;
+    private PlayerShooting _playerShooting;
 
     public void Initialize(FixedJoystick joystick)
     {

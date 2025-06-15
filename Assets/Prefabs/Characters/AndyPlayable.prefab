@@ -1039,7 +1039,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf4cf2dee1bea5045acce6fbfafba752, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 5.5
+  moveSpeed: 4.5
   model: {fileID: 8132213793854506204}
   rotationSpeed: 10
   modelRotationOffset: {x: 0, y: 180, z: 0}
@@ -1062,7 +1062,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   attackType: 1
-  attackConfig: {fileID: 11400000, guid: 3889b5f5f8b24404d82dc556db9074ec, type: 2}
+  attackConfig: {fileID: 11400000, guid: fcd178e53e5667d448105806058b0372, type: 2}
   firePoint: {fileID: 7188103559528356596}
   joystickDeadZone: 0.1
   targetLayer:
@@ -1075,6 +1075,10 @@ MonoBehaviour:
   fistSpawnOffset: {x: 0, y: 0, z: 0.5}
   joystick: {fileID: 0}
   ammoDisplay: {fileID: 0}
+  rotationSpeed: 5
+  _animator: {fileID: 0}
+  attackTriggerName: Attack
+  model: {fileID: 0}
   shotDelay: 0.2
 --- !u!114 &4700840358105326763
 MonoBehaviour:
@@ -1212,8 +1216,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cb6498986be255945aeb64ec23adaf59, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerSprite: {fileID: 1776231361, guid: dd584a6770e44ae4fb4f49c2d22d0955, type: 3}
-  playerName: Timi
+  playerSprite: {fileID: 1924906399, guid: dd584a6770e44ae4fb4f49c2d22d0955, type: 3}
+  playerName: Andy
 --- !u!1 &3994643088239652033
 GameObject:
   m_ObjectHideFlags: 0

@@ -1043,12 +1043,16 @@ MonoBehaviour:
   model: {fileID: 2376559738532336927}
   rotationSpeed: 10
   modelRotationOffset: {x: 0, y: 90, z: 0}
+  useKeyboardInput: 1
   bushSpeedMultiplier: 1.2
   boostFadeDuration: 0.5
   bushCheckInterval: 0.2
   bushLayer:
     serializedVersion: 2
     m_Bits: 4096
+  attackRotationSpeed: 20
+  attackLookInfluence: 0.7
+  attackLookDuration: 0.5
 --- !u!114 &645448569847349134
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1070,11 +1074,14 @@ MonoBehaviour:
     m_Bits: 512
   targetSearchRadius: 10
   fistPrefab: {fileID: 474797638876908477, guid: ff8c0022e8714e7499ea7fa607d98b26, type: 3}
-  meleeRange: 1.5
-  meleeDuration: 0.3
-  fistSpawnOffset: {x: 0, y: 0, z: 0.5}
+  meleeRange: 2
+  meleeDuration: 0.2
+  fistSpawnOffset: {x: 0, y: 0, z: 0.4}
   joystick: {fileID: 0}
   ammoDisplay: {fileID: 0}
+  _animator: {fileID: 0}
+  attackTriggerName: Attack
+  model: {fileID: 0}
   shotDelay: 0.2
 --- !u!114 &4700840358105326763
 MonoBehaviour:
@@ -1212,8 +1219,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cb6498986be255945aeb64ec23adaf59, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerImage: {fileID: 0}
-  playerNameText: {fileID: 0}
   playerSprite: {fileID: 1776231361, guid: dd584a6770e44ae4fb4f49c2d22d0955, type: 3}
   playerName: Timi
 --- !u!1 &3994643088239652033

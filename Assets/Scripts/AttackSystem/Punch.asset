@@ -20,6 +20,6 @@ MonoBehaviour:
   damagePerBullet: 8
   knockbackForce: 5
   maxAmmo: 5
-  reloadTime: 1
+  reloadTime: 2
   gradualReload: 1
   shotDelay: 0.1

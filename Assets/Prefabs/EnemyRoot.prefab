@@ -51,7 +51,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fcf455f2fff2e884399f5108eed08816, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  walkDetectionRange: 45
+  walkDetectionRange: 100
   runDetectionRange: 15
   attackRange: 3
   wanderRadius: 5
@@ -83,6 +83,8 @@ MonoBehaviour:
   healthText: {fileID: 7695771921422508240}
   healthCanvas: {fileID: 1629982024027526408}
   healthBarOffset: {x: 0, y: 2, z: 0}
+  canvasLookDirection: 3
+  customRotationEuler: {x: 45, y: 0, z: 0}
 --- !u!195 &9055736936911085147
 NavMeshAgent:
   m_ObjectHideFlags: 0
