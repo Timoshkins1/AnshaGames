@@ -131,13 +131,14 @@ public class PlayerShooting : MonoBehaviour
 
         if (fist.TryGetComponent<MeleeFist>(out var meleeFist))
         {
-            meleeFist.Initialize(
+            meleeFist.InitializeWithAmmo(
                 attackDirection.normalized,    // Vector3 direction
                 meleeRange,                   // float range
                 attackConfig.damagePerBullet, // float damage
                 attackConfig.knockbackForce,  // float knockbackForce
                 meleeDuration,                // float duration
-                gameObject                     // GameObject owner
+                gameObject,                   // GameObject owner
+                attackConfig                  // PlayerAttack config
             );
         }
         else

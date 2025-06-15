@@ -19,7 +19,7 @@ public class EnemySpawner : MonoBehaviour
 
     [Header("Timing Settings")]
     [SerializeField] private float spawnInterval = 3f;
-    [SerializeField] private float waveCooldown = 5f;
+    //[SerializeField] private float waveCooldown = 5f;
     [SerializeField] private int maxSpawnAttempts = 10;
     [SerializeField] private float periodicSpawnInterval = 8f;
 

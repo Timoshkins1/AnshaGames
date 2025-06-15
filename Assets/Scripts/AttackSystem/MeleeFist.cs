@@ -20,6 +20,12 @@ public class MeleeFist : MonoBehaviour
     private bool hasHit = false;
     private bool isReturning = false;
 
+    // Поля для работы с системой патронов
+    private int currentAmmo;
+    private int maxAmmo;
+    private float reloadTime;
+    private bool isReloading = false;
+
     public void Initialize(Vector3 attackDirection, float attackRange, float attackDamage, float attackKnockback, float attackDuration, GameObject ownerObj)
     {
         direction = attackDirection;
@@ -36,6 +42,16 @@ public class MeleeFist : MonoBehaviour
         {
             transform.rotation = Quaternion.LookRotation(direction);
         }
+    }
+
+    public void InitializeWithAmmo(Vector3 attackDirection, float attackRange, float attackDamage, float attackKnockback, float attackDuration, GameObject ownerObj, PlayerAttack attackConfig)
+    {
+        Initialize(attackDirection, attackRange, attackDamage, attackKnockback, attackDuration, ownerObj);
+
+        // Инициализация параметров патронов из конфига атаки
+        maxAmmo = attackConfig.maxAmmo;
+        reloadTime = attackConfig.reloadTime;
+        currentAmmo = maxAmmo;
     }
 
     private void Update()
@@ -71,6 +87,33 @@ public class MeleeFist : MonoBehaviour
         {
             Destroy(gameObject);
         }
+
+        // Логика перезарядки
+        if (currentAmmo <= 0 && !isReloading)
+        {
+            StartCoroutine(Reload());
+        }
+    }
+
+    private System.Collections.IEnumerator Reload()
+    {
+        isReloading = true;
+        yield return new WaitForSeconds(reloadTime);
+        currentAmmo = maxAmmo;
+        isReloading = false;
+    }
+
+    public bool CanAttack()
+    {
+        return currentAmmo > 0 && !isReloading;
+    }
+
+    public void ConsumeAmmo()
+    {
+        if (currentAmmo > 0)
+        {
+            currentAmmo--;
+        }
     }
 
     private void OnTriggerEnter(Collider other)
@@ -93,9 +136,6 @@ public class MeleeFist : MonoBehaviour
             ApplyKnockback(other);
             hasHit = true;
         }
-
-        // Убрали уничтожение кулака при попадании
-        // Кулак будет продолжать существовать до конца длительности анимации
     }
 
     private void ApplyKnockback(Collider target)
