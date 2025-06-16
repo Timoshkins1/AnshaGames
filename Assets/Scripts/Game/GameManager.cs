@@ -79,6 +79,7 @@ public class GameManager : MonoBehaviour
     {
         gameOver = true;
         gameOverPanel.SetActive(true);
+        PowerUpManager.Instance.ResetPlayerConfig();
         Time.timeScale = 0f;
     }
 }

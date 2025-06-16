@@ -11,6 +11,8 @@ public class PowerUpManager : MonoBehaviour
     [SerializeField] private Transform powerUpContainer;
     [SerializeField] private PowerUpOption powerUpOptionPrefab;
 
+    private PlayerAttack originalAttackConfig;
+    private PlayerAttack currentAttackConfig;
 
     [Header("Power Up Settings")]
     [SerializeField] private PowerUpData[] allPowerUps;
@@ -33,8 +35,30 @@ public class PowerUpManager : MonoBehaviour
     private void Start()
     {
         powerUpPanel.SetActive(false);
+        // Получаем ссылку на оригинальную конфигурацию
+        var player = PlayerManager.Instance.PlayerTransform.gameObject;
+        var shooting = player.GetComponent<PlayerShooting>();
+        if (shooting != null)
+        {
+            originalAttackConfig = shooting.attackConfig;
+            // Создаем копию оригинальной конфигурации
+            currentAttackConfig = Instantiate(originalAttackConfig);
+            shooting.attackConfig = currentAttackConfig;
+        }
     }
-
+    public void ResetPlayerConfig()
+    {
+        var player = PlayerManager.Instance.PlayerTransform.gameObject;
+        var shooting = player.GetComponent<PlayerShooting>();
+        if (shooting != null)
+        {
+            // Возвращаем оригинальную конфигурацию (без изменений)
+            shooting.attackConfig = originalAttackConfig;
+            // Создаем новую копию для следующей игры
+            currentAttackConfig = Instantiate(originalAttackConfig);
+            shooting.attackConfig = currentAttackConfig;
+        }
+    }
     public void ShowPowerUpSelection()
     {
         if (waitingForSelection) return;
@@ -93,6 +117,7 @@ public class PowerUpManager : MonoBehaviour
     private void ApplyPowerUp(PowerUpData powerUp)
     {
         var player = PlayerManager.Instance.PlayerTransform.gameObject;
+        var shooting = player.GetComponent<PlayerShooting>();
 
         switch (powerUp.powerUpType)
         {
@@ -102,8 +127,14 @@ public class PowerUpManager : MonoBehaviour
                 break;
 
             case PowerUpType.Damage:
-                var shooting = player.GetComponent<PlayerShooting>();
                 if (shooting != null) shooting.attackConfig.damagePerBullet += (int)powerUp.value;
+                break;
+            case PowerUpType.AmmoCapacity:
+                if (shooting != null)
+                {
+                    shooting.attackConfig.maxAmmo += (int)powerUp.value;
+                    shooting.UpdateAmmoCapacity(); // Обновляем текущие патроны
+                }
                 break;
 
             case PowerUpType.MoveSpeed:
@@ -121,13 +152,7 @@ public class PowerUpManager : MonoBehaviour
                 if (controller != null) controller.IncreaseBoostFadeDuration(powerUp.value);
                 break;
 
-            case PowerUpType.AmmoCapacity:
-                shooting = player.GetComponent<PlayerShooting>();
-                if (shooting != null) shooting.attackConfig.maxAmmo += (int)powerUp.value;
-                break;
-
             case PowerUpType.ReloadSpeed:
-                shooting = player.GetComponent<PlayerShooting>();
                 if (shooting != null) shooting.attackConfig.reloadTime -= powerUp.value;
                 break;
         }
