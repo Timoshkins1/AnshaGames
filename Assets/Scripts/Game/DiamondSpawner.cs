@@ -4,7 +4,6 @@ using System;
 
 public class DiamondSpawner : MonoBehaviour
 {
-
     public event Action<Diamond> OnDiamondSpawned;
     [Header("Spawn Settings")]
     [SerializeField] private GameObject diamondPrefab;
@@ -20,9 +19,8 @@ public class DiamondSpawner : MonoBehaviour
 
     private List<Diamond> diamondPool = new List<Diamond>();
     private List<Vector3> precomputedOffsets = new List<Vector3>();
+    private int activeSpawnPointsCount = 1; // Начинаем с 1 точки спавна
 
-
-    // Добавьте свойство для доступа к пулу
     public List<Diamond> DiamondPool => diamondPool;
     private const int PrecomputedOffsetCount = 16;
 
@@ -81,7 +79,10 @@ public class DiamondSpawner : MonoBehaviour
             return;
         }
 
-        CleanupExistingDiamonds(); // Очистка перед новой волной
+        // Обновляем количество активных точек спавна на основе текущей волны
+        UpdateActiveSpawnPointsCount();
+
+        CleanupExistingDiamonds();
         int spawnedCount = 0;
         int attempts = 0;
         int maxAttempts = diamondsCount * 2;
@@ -101,9 +102,20 @@ public class DiamondSpawner : MonoBehaviour
         }
     }
 
+    private void UpdateActiveSpawnPointsCount()
+    {
+        // Получаем текущую волну из GameManager
+        int currentWave = GameManager.Instance != null ? GameManager.Instance.CurrentWave : 1;
+
+        // Каждые две волны увеличиваем количество точек спавна на 1
+        activeSpawnPointsCount = 1 + (currentWave - 1) / 2;
+
+        // Не превышаем общее количество доступных точек спавна
+        activeSpawnPointsCount = Mathf.Min(activeSpawnPointsCount, spawnPoints.Length);
+    }
+
     private void CleanupExistingDiamonds()
     {
-        // Деактивируем все алмазы из пула перед новой волной
         foreach (Diamond diamond in diamondPool)
         {
             if (diamond.gameObject.activeInHierarchy)
@@ -116,9 +128,10 @@ public class DiamondSpawner : MonoBehaviour
 
     private bool TrySpawnDiamond()
     {
-        Transform spawnPoint = spawnPoints[UnityEngine.Random.Range(0, spawnPoints.Length)];
+        // Выбираем случайную точку спавна из активных
+        int spawnPointIndex = UnityEngine.Random.Range(0, activeSpawnPointsCount);
+        Transform spawnPoint = spawnPoints[spawnPointIndex];
 
-        // Сначала пробуем предварительно вычисленные позиции
         foreach (Vector3 offset in precomputedOffsets)
         {
             Vector3 spawnPosition = spawnPoint.position + offset;
@@ -129,7 +142,6 @@ public class DiamondSpawner : MonoBehaviour
             }
         }
 
-        // Если не получилось, пробуем случайные позиции
         for (int i = 0; i < maxSpawnAttempts; i++)
         {
             Vector3 randomOffset = UnityEngine.Random.insideUnitSphere * spawnRadius;
@@ -151,7 +163,6 @@ public class DiamondSpawner : MonoBehaviour
         return !Physics.CheckSphere(position, checkRadius, obstacleMask);
     }
 
-    // Модифицируйте метод SpawnAtPosition
     private void SpawnAtPosition(Vector3 position)
     {
         Diamond diamond = GetPooledDiamond();
@@ -173,7 +184,6 @@ public class DiamondSpawner : MonoBehaviour
         diamond.gameObject.SetActive(true);
         diamond.ResetDiamond();
 
-        // Уведомляем о новом алмазе
         OnDiamondSpawned?.Invoke(diamond);
     }
 

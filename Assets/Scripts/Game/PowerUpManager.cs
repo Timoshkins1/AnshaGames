@@ -11,6 +11,7 @@ public class PowerUpManager : MonoBehaviour
     [SerializeField] private Transform powerUpContainer;
     [SerializeField] private PowerUpOption powerUpOptionPrefab;
 
+
     [Header("Power Up Settings")]
     [SerializeField] private PowerUpData[] allPowerUps;
 
@@ -71,8 +72,24 @@ public class PowerUpManager : MonoBehaviour
         powerUpPanel.SetActive(false);
         Time.timeScale = 1f; // Resume game
         waitingForSelection = false;
+
+        // Обновляем UI после применения улучшения
+        UpdatePlayerUI();
     }
 
+    private void UpdatePlayerUI()
+    {
+        var player = PlayerManager.Instance.PlayerTransform.gameObject;
+        var shooting = player.GetComponent<PlayerShooting>();
+        if (shooting != null)
+        {
+            var ammoDisplay = FindObjectOfType<AmmoDisplay>();
+            if (ammoDisplay != null)
+            {
+                ammoDisplay.Initialize(shooting.attackConfig.maxAmmo);
+            }
+        }
+    }
     private void ApplyPowerUp(PowerUpData powerUp)
     {
         var player = PlayerManager.Instance.PlayerTransform.gameObject;

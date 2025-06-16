@@ -13,6 +13,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] private TMP_Text waveText;
     [SerializeField] private GameObject gameOverPanel;
 
+    public int CurrentWave => currentWave;
+
     private int currentWave = 0;
     private int diamondsCollected = 0;
     private int diamondsToCollect = 0;
