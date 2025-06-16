@@ -9,6 +9,9 @@ public class PlayerShooting : MonoBehaviour
     public AttackType attackType = AttackType.Ranged;
     public PlayerAttack attackConfig;
 
+    [Header("Animation References")]
+    [SerializeField] private PlayerAnimation _playerAnimation;
+
     [Header("Ranged Settings")]
     public Transform firePoint;
     public float joystickDeadZone = 0.1f;
@@ -173,7 +176,13 @@ public class PlayerShooting : MonoBehaviour
                 CreateBullet(bulletDirection);
             }
         }
-        // Получаем контроллер игрока
+
+        // Вызываем случайную анимацию дальнобойной атаки
+        if (_playerAnimation != null)
+        {
+            _playerAnimation.TriggerRangedAttack();
+        }
+
         var playerController = GetComponent<PlayerController>();
         if (playerController != null)
         {
@@ -187,7 +196,6 @@ public class PlayerShooting : MonoBehaviour
         Vector3 spawnPosition = transform.position + transform.TransformDirection(fistSpawnOffset);
         GameObject fist = Instantiate(fistPrefab, spawnPosition, Quaternion.identity);
 
-     
         if (fist.TryGetComponent<MeleeFist>(out var meleeFist))
         {
             meleeFist.Initialize(
@@ -203,7 +211,13 @@ public class PlayerShooting : MonoBehaviour
         {
             Destroy(fist, meleeDuration);
         }
-        // Получаем контроллер игрока
+
+        // Вызываем случайную анимацию ближней атаки
+        if (_playerAnimation != null)
+        {
+            _playerAnimation.TriggerMeleeAttack();
+        }
+
         var playerController = GetComponent<PlayerController>();
         if (playerController != null)
         {

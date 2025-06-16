@@ -818,6 +818,7 @@ GameObject:
   - component: {fileID: 6955498850415982785}
   - component: {fileID: 1432130770968483063}
   - component: {fileID: 7205772562890739462}
+  - component: {fileID: 3034959058786452897}
   m_Layer: 0
   m_Name: CanvasPointer
   m_TagString: Untagged
@@ -909,6 +910,27 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
+--- !u!95 &3034959058786452897
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3314812272541757252}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 8b11759050e4f9546b889a5854ce3a05, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &3410288938811883989
 GameObject:
   m_ObjectHideFlags: 0
@@ -1069,6 +1091,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   attackType: 1
   attackConfig: {fileID: 11400000, guid: fcd178e53e5667d448105806058b0372, type: 2}
+  _playerAnimation: {fileID: 7041404691737664745}
   firePoint: {fileID: 7188103559528356596}
   joystickDeadZone: 0.1
   targetLayer:
@@ -1208,7 +1231,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f5ab0a73db9c5a4cae2fbde1ba994a7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _animator: {fileID: 1091027436512994767}
   _joystick: {fileID: 0}
+  meleeAttackTriggers:
+  - MeleeAttack1
+  - MeleeAttack2
+  rangedAttackTriggers:
+  - RangedAttack1
+  - RangedAttack2
 --- !u!114 &1158917640363809887
 MonoBehaviour:
   m_ObjectHideFlags: 0

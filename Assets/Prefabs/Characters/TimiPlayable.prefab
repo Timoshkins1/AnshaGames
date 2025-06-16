@@ -1069,6 +1069,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   attackType: 1
   attackConfig: {fileID: 11400000, guid: 3889b5f5f8b24404d82dc556db9074ec, type: 2}
+  _playerAnimation: {fileID: 7041404691737664745}
   firePoint: {fileID: 7188103559528356596}
   joystickDeadZone: 0.1
   targetLayer:
@@ -1209,6 +1210,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _joystick: {fileID: 0}
+  meleeAttackTriggers:
+  - MeleeAttack1
+  - MeleeAttack2
+  rangedAttackTriggers:
+  - RangedAttack1
+  - RangedAttack2
 --- !u!114 &1158917640363809887
 MonoBehaviour:
   m_ObjectHideFlags: 0
