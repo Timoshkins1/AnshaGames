@@ -17,7 +17,7 @@ MonoBehaviour:
   spreadAngle: 0
   bulletSpeed: 40
   bulletLifetime: 1
-  damagePerBullet: 8
+  damagePerBullet: 10
   knockbackForce: 5
   maxAmmo: 5
   reloadTime: 2
