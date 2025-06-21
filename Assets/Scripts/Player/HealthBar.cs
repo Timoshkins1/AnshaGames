@@ -4,6 +4,7 @@ using UnityEngine.UI;
 public class HealthBar : MonoBehaviour
 {
     [SerializeField] private Slider slider;
+    [SerializeField] private CameraFollow cameraFollow;
 
     public void SetMaxHealth(float health)
     {
@@ -13,6 +14,10 @@ public class HealthBar : MonoBehaviour
 
     public void SetHealth(float health)
     {
+        if (cameraFollow != null)
+        {
+            cameraFollow.GetComponent<CameraFollow>().Shake(0.05f, 0.1f);
+        }
         slider.value = health;
     }
 }

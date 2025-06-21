@@ -33,6 +33,7 @@ public class BrawlStarsBotAI : MonoBehaviour
     private EnemyHealth enemyHealth;
     private Health playerHealth; // Ссылка на здоровье игрока
 
+
     void Start()
     {
         // Проверка NavMesh
@@ -170,6 +171,7 @@ public class BrawlStarsBotAI : MonoBehaviour
         else
             Invoke("DoDamage", attack2Delay);
 
+        
         Invoke("EndAttack", 2f);
     }
 
@@ -189,6 +191,7 @@ public class BrawlStarsBotAI : MonoBehaviour
 
             // Наносим урон игроку
             playerHealth.TakeDamage(damage);
+           
             Debug.Log($"Zombie attacked player for {damage} damage!");
         }
     }
