@@ -10,6 +10,14 @@ public class PlayerManager : MonoBehaviour
     [SerializeField] private Image playerImageUI;  // Картинка в UI (на Canvas)
     [SerializeField] private TextMeshProUGUI playerNameUI;   // Текст имени в UI (на Canvas)
 
+    [Header("Joystick Visual Settings")]
+    [SerializeField] private Sprite normalJoystickBackground;
+    [SerializeField] private Sprite normalJoystickHandle;
+    [SerializeField] private Sprite ultimateJoystickBackground;
+    [SerializeField] private Sprite ultimateJoystickHandle;
+    [SerializeField] private Image joystickBackgroundImage;
+    [SerializeField] private Image joystickHandleImage;
+
     [Header("Settings")]
     [SerializeField] private GameObject[] playerPrefabs;
     [SerializeField] private Transform spawnPoint;
@@ -111,8 +119,12 @@ public class PlayerManager : MonoBehaviour
         var ultimate = player.GetComponent<PlayerUltimate>();
         if (ultimate != null && ultimateSlider != null)
         {
-            ultimate.Initialize(ultimateSlider, ultimateJoystick); // Теперь передаем и джойстик
+            ultimate.Initialize(ultimateSlider, ultimateJoystick);
+
+            // Подписываемся на событие изменения состояния ульты
+            ultimate.OnUltimateReadyChanged += UpdateJoystickVisuals;
         }
+
     }
 
     /// <summary>
@@ -132,6 +144,20 @@ public class PlayerManager : MonoBehaviour
             {
                 playerNameUI.text = playerUI.GetPlayerName();
             }
+        }
+    }
+    private void UpdateJoystickVisuals(bool isUltimateReady)
+    {
+        if (joystickBackgroundImage != null)
+        {
+            joystickBackgroundImage.sprite = isUltimateReady ?
+                ultimateJoystickBackground : normalJoystickBackground;
+        }
+
+        if (joystickHandleImage != null)
+        {
+            joystickHandleImage.sprite = isUltimateReady ?
+                ultimateJoystickHandle : normalJoystickHandle;
         }
     }
 }

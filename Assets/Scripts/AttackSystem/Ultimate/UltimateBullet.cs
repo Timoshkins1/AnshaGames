@@ -30,6 +30,7 @@ public class UltimateBullet : MonoBehaviour
         if (((1 << other.gameObject.layer) & destroyableLayers) != 0)
         {
             Destroy(other.gameObject); // Удаляем препятствие
+            CameraFollow.ShakeCamera(0.9f, 0.3f);
         }
 
         // Наносим урон врагам/объектам

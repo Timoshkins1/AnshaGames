@@ -9,6 +9,11 @@ public class PlayerShooting : MonoBehaviour
     public AttackType attackType = AttackType.Ranged;
     public PlayerAttack attackConfig;
 
+    [Header("Input Settings")]
+    public float tapThreshold = 0.2f; // Максимальное время для распознавания тапа
+    private float joystickActiveTime = 0f;
+    private bool isJoystickHeld = false;
+
     [Header("Animation References")]
     [SerializeField] private PlayerAnimation _playerAnimation;
 
@@ -132,50 +137,79 @@ public class PlayerShooting : MonoBehaviour
     private void HandleAttackInput()
     {
         Vector3 joystickDirection = new Vector3(joystick.Horizontal, 0, joystick.Vertical);
+        bool joystickActive = joystickDirection.sqrMagnitude > joystickDeadZone * joystickDeadZone;
 
-        if (joystickDirection.sqrMagnitude > joystickDeadZone * joystickDeadZone)
+        // Обновляем таймер активности джойстика
+        if (joystickActive)
         {
-            isAiming = true;
+            if (!isJoystickHeld)
+            {
+                // Джойстик только что начал двигаться
+                isJoystickHeld = true;
+                joystickActiveTime = 0f;
+            }
+            else
+            {
+                // Джойстик продолжает двигаться
+                joystickActiveTime += Time.deltaTime;
+            }
+
+            // Всегда обновляем направление при активном джойстике
             attackDirection = joystickDirection.normalized;
         }
-        else if (isAiming && canShoot)
+        else if (isJoystickHeld)
         {
-            // Проверяем, заряжена ли ульта
-            var ultimate = GetComponent<PlayerUltimate>();
-            if (ultimate != null && ultimate.IsUltimateReady())
+            // Джойстик отпустили - определяем тип ввода
+            if (joystickActiveTime <= tapThreshold)
             {
-                // Активируем ульту вместо обычной атаки
-                ultimate.ActivateUltimate();
-                CameraFollow.ShakeCamera(0.6f, 0.2f);
-                ultimate.ResetCharge();
+                // Быстрое нажатие - атака по ближайшему врагу
+                FindNearestTarget();
+                TryAttack();
             }
-            else if (currentAmmo > 0) // Обычная атака
+            else
             {
-                if (attackType == AttackType.Ranged)
-                {
-                    PerformRangedAttack();
-                }
-                else if (attackType == AttackType.Melee)
-                {
-                    PerformMeleeAttack();
-                }
-
-                currentAmmo--;
-                UpdateAmmoDisplay();
+                // Долгое зажатие - атака в последнем направлении
+                TryAttack();
             }
 
-            canShoot = false;
-            isAiming = false;
-        }
-        else if (isAiming && currentAmmo <= 0)
-        {
-            isAiming = false;
+            isJoystickHeld = false;
+            joystickActiveTime = 0f;
         }
     }
+    private void TryAttack()
+    {
+        if (!canShoot) return;
 
+        // Проверяем, заряжена ли ульта
+        var ultimate = GetComponent<PlayerUltimate>();
+        if (ultimate != null && ultimate.IsUltimateReady())
+        {
+            ultimate.ActivateUltimate();
+            CameraFollow.ShakeCamera(0.6f, 0.2f);
+            ultimate.ResetCharge();
+            canShoot = false;
+            return;
+        }
+
+        if (currentAmmo <= 0) return;
+
+        // Выполняем обычную атаку
+        if (attackType == AttackType.Ranged)
+        {
+            PerformRangedAttack();
+        }
+        else if (attackType == AttackType.Melee)
+        {
+            PerformMeleeAttack();
+        }
+
+        currentAmmo--;
+        UpdateAmmoDisplay();
+        canShoot = false;
+    }
     private void PerformRangedAttack()
     {
-        FindNearestTarget();
+    
 
         if (attackConfig.bulletsCount > 0)
         {
@@ -205,7 +239,7 @@ public class PlayerShooting : MonoBehaviour
 
     private void PerformMeleeAttack()
     {
-        FindNearestTarget();
+        
         Vector3 spawnPosition = transform.position + transform.TransformDirection(fistSpawnOffset);
         GameObject fist = Instantiate(fistPrefab, spawnPosition, Quaternion.identity);
 

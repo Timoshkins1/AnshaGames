@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,6 +11,7 @@ public abstract class PlayerUltimate : MonoBehaviour
     protected Joystick ultimateJoystick;
     protected Vector3 ultimateDirection = Vector3.forward;
     protected bool isUltimateJoystickActive = false;
+    public event Action<bool> OnUltimateReadyChanged;
 
     public bool IsUltimateReady() => currentCharge >= maxCharge;
 
@@ -43,13 +45,17 @@ public abstract class PlayerUltimate : MonoBehaviour
 
         Vector2 joystickInput = new Vector2(ultimateJoystick.Horizontal, ultimateJoystick.Vertical);
         float inputMagnitude = joystickInput.magnitude;
-
+        bool isUltimateReady = IsUltimateReady();
         // Если джойстик только что активировался
         if (inputMagnitude > joystickDeadZone && !isUltimateJoystickActive)
         {
             isUltimateJoystickActive = true;
         }
-
+        if (OnUltimateReadyChanged != null &&
+        isUltimateReady != (currentCharge >= maxCharge))
+        {
+            OnUltimateReadyChanged.Invoke(isUltimateReady);
+        }
         // Если джойстик активен, обновляем направление
         if (isUltimateJoystickActive)
         {

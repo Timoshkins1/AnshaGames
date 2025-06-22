@@ -1069,6 +1069,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   attackType: 0
   attackConfig: {fileID: 11400000, guid: 62394292f2a50a143b1059646f144703, type: 2}
+  tapThreshold: 0.2
   _playerAnimation: {fileID: 0}
   firePoint: {fileID: 7188103559528356596}
   joystickDeadZone: 0.1

@@ -19,9 +19,13 @@ public class EnemySpawner : MonoBehaviour
 
     [Header("Timing Settings")]
     [SerializeField] private float spawnInterval = 3f;
-    //[SerializeField] private float waveCooldown = 5f;
     [SerializeField] private int maxSpawnAttempts = 10;
     [SerializeField] private float periodicSpawnInterval = 8f;
+
+    [Header("Independent Spawn Settings")]
+    [SerializeField] private float independentSpawnInterval = 60f;
+    [SerializeField] private int independentSpawnCount = 5;
+    [SerializeField] private float independentSpawnRadius = 20f;
 
     [Header("Enemy Scaling")]
     [SerializeField] private float healthIncreasePerWave = 0.1f;
@@ -40,6 +44,7 @@ public class EnemySpawner : MonoBehaviour
     private int currentWave;
     private float spawnTimer;
     private float periodicSpawnTimer;
+    private float independentSpawnTimer;
     private NavMeshHit navHit;
     private int spawnAttemptCount = 0;
     private Vector3[] precomputedDirections = new Vector3[16];
@@ -93,6 +98,7 @@ public class EnemySpawner : MonoBehaviour
         }
 
         periodicSpawnTimer = periodicSpawnInterval;
+        independentSpawnTimer = independentSpawnInterval;
         currentMaxEnemies = initialEnemies;
     }
 
@@ -142,6 +148,38 @@ public class EnemySpawner : MonoBehaviour
             periodicSpawnTimer = 0f;
             SpawnPeriodicEnemies();
         }
+
+        independentSpawnTimer -= Time.deltaTime;
+        if (independentSpawnTimer <= 0f)
+        {
+            independentSpawnTimer = independentSpawnInterval;
+            SpawnIndependentEnemies();
+        }
+    }
+
+    private void SpawnIndependentEnemies()
+    {
+        for (int i = 0; i < independentSpawnCount; i++)
+        {
+            TrySpawnEnemyIndependent();
+        }
+        if (debugLogging) Debug.Log($"Independent spawn: {independentSpawnCount} enemies");
+    }
+
+    private void TrySpawnEnemyIndependent()
+    {
+        if (!enemyPrefab || !player) return;
+
+        // »спользуем ту же логику выбора точек, что и в основном спавне
+        if (TryStandardSpawn())
+        {
+            return;
+        }
+
+        if (useSpawnPointsPool && spawnPoints.Count > 0)
+        {
+            TryFallbackSpawnFromPool();
+        }
     }
 
     private void SpawnPeriodicEnemies()
@@ -163,13 +201,11 @@ public class EnemySpawner : MonoBehaviour
     {
         if (!enemyPrefab || !player || activeEnemies.Count >= currentMaxEnemies) return;
 
-        // —начала пробуем стандартный алгоритм спавна
         if (TryStandardSpawn())
         {
             return;
         }
 
-        // ≈сли не получилось - пробуем спавн на заготовленных точках
         if (useSpawnPointsPool && spawnPoints.Count > 0)
         {
             TryFallbackSpawnFromPool();
@@ -180,7 +216,6 @@ public class EnemySpawner : MonoBehaviour
     {
         spawnAttemptCount = 0;
 
-        // ѕробуем предварительно вычисленные направлени€
         for (int i = 0; i < precomputedDirections.Length && spawnAttemptCount < maxSpawnAttempts; i++)
         {
             Vector3 dir = (precomputedDirections[i] + Random.insideUnitSphere * 0.3f).normalized;
@@ -188,7 +223,6 @@ public class EnemySpawner : MonoBehaviour
                 return true;
         }
 
-        // ѕробуем случайные направлени€
         while (spawnAttemptCount < maxSpawnAttempts)
         {
             Vector3 spawnDirection = Random.onUnitSphere;
@@ -204,17 +238,14 @@ public class EnemySpawner : MonoBehaviour
 
     private void TryFallbackSpawnFromPool()
     {
-        // —оздаем временный список доступных точек
         List<Transform> availablePoints = new List<Transform>(spawnPoints);
 
-        // ѕробуем точки в случайном пор€дке
         while (availablePoints.Count > 0)
         {
             int randomIndex = Random.Range(0, availablePoints.Count);
             Transform spawnPoint = availablePoints[randomIndex];
             availablePoints.RemoveAt(randomIndex);
 
-            // ѕровер€ем валидность позиции
             if (IsValidSpawnPosition(spawnPoint.position, out _))
             {
                 SpawnEnemy(spawnPoint.position);
