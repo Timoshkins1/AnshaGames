@@ -19,8 +19,9 @@ public class MeleeFist : MonoBehaviour
     private Rigidbody rb;
     private bool hasHit = false;
     private bool isReturning = false;
+    private PlayerUltimate ultimate;
 
-    public void Initialize(Vector3 attackDirection, float attackRange, float attackDamage, float attackKnockback, float attackDuration, GameObject ownerObj)
+    public void Initialize(Vector3 attackDirection, float attackRange, float attackDamage, float attackKnockback, float attackDuration, GameObject ownerObj, PlayerUltimate ultimate)
     {
         direction = attackDirection;
         range = attackRange;
@@ -30,6 +31,7 @@ public class MeleeFist : MonoBehaviour
         owner = ownerObj;
         startPosition = transform.position;
         rb = GetComponent<Rigidbody>();
+        this.ultimate = ultimate;
 
         if (direction != Vector3.zero)
         {
@@ -82,6 +84,15 @@ public class MeleeFist : MonoBehaviour
             enemyHealth.TakeDamage(damage);
             ApplyKnockback(other);
             hasHit = true;
+            // Добавляем заряд ульте при попадании
+            if (owner != null)
+            {
+                var ultimate = owner.GetComponent<PlayerUltimate>();
+                if (ultimate != null)
+                {
+                    ultimate.AddCharge(10f); // Пример: +10 к заряду за попадание
+                }
+            }
         }
         else if (other.TryGetComponent<ObjectHealth>(out var objectHealth))
         {

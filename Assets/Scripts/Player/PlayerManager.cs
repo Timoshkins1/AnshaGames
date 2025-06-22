@@ -20,7 +20,11 @@ public class PlayerManager : MonoBehaviour
     [SerializeField] private EnemySpawner enemySpawner;
     [SerializeField] private CameraFollow cameraFollow;
     [SerializeField] private PlayerUI playerUI; // Ссылка на UI компонент
+    [SerializeField] private Slider ultimateSlider;
 
+    [Header("Ultimate Settings")]
+    [SerializeField] private Joystick ultimateJoystick; // Новый джойстик для ульты
+    public Joystick UltimateJoystick => ultimateJoystick;
     public FixedJoystick MovementJoystick => movementJoystick;
     public Joystick ShootingJoystick => shootingJoystick;
     public Transform PlayerTransform => currentPlayer?.transform;
@@ -104,7 +108,11 @@ public class PlayerManager : MonoBehaviour
         {
             cameraFollow.SetPlayerTransform(player.transform);
         }
-       
+        var ultimate = player.GetComponent<PlayerUltimate>();
+        if (ultimate != null && ultimateSlider != null)
+        {
+            ultimate.Initialize(ultimateSlider, ultimateJoystick); // Теперь передаем и джойстик
+        }
     }
 
     /// <summary>

@@ -14,8 +14,8 @@ public class Bullet : MonoBehaviour
     private float knockbackForce;
     private GameObject owner;
     private Rigidbody rb;
-
-    public void Initialize(Vector3 dir, float spd, float life, int dmg, float knockback, GameObject ownerObj)
+    private PlayerUltimate ultimate;
+    public void Initialize(Vector3 dir, float spd, float life, int dmg, float knockback, GameObject ownerObj, PlayerUltimate ultimate)
     {
         direction = dir;
         speed = spd;
@@ -23,6 +23,7 @@ public class Bullet : MonoBehaviour
         knockbackForce = knockback;
         owner = ownerObj;
         rb = GetComponent<Rigidbody>();
+        this.ultimate = ultimate;
 
         rb.velocity = direction * speed;
         Destroy(gameObject, life);
@@ -40,6 +41,15 @@ public class Bullet : MonoBehaviour
             enemyHealth.TakeDamage(damage);
             ApplyKnockback(other);
             shouldDestroy = true;
+            // Добавляем заряд ульте при попадании
+            if (owner != null)
+            {
+                var ultimate = owner.GetComponent<PlayerUltimate>();
+                if (ultimate != null)
+                {
+                    ultimate.AddCharge(10f); // Пример: +10 к заряду за попадание
+                }
+            }
         }
         else if (other.TryGetComponent<ObjectHealth>(out var objectHealth))
         {

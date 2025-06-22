@@ -23,7 +23,8 @@ public class BrawlStarsBotAI : MonoBehaviour
     public Transform player;
     public Animator animator;
     public NavMeshAgent agent;
-    public Collider hitCollider;
+    public Collider hitCollider; // Коллайдер для атаки
+    public Collider detectionCollider; // Отдельный коллайдер для обнаружения объектов
 
     private float timer;
     private float attackTimer;
@@ -31,12 +32,11 @@ public class BrawlStarsBotAI : MonoBehaviour
     private bool isAttacking = false;
     private int attackType = 0;
     private EnemyHealth enemyHealth;
-    private Health playerHealth; // Ссылка на здоровье игрока
-
+    private Health playerHealth;
+    private ObjectHealth currentDestroyableTarget;
 
     void Start()
     {
-        // Проверка NavMesh
         if (!NavMesh.SamplePosition(transform.position, out NavMeshHit hit, 1f, NavMesh.AllAreas))
         {
             Debug.LogError("Bot starting position is not on NavMesh!");
@@ -47,7 +47,6 @@ public class BrawlStarsBotAI : MonoBehaviour
         if (player == null)
             player = GameObject.FindGameObjectWithTag("Player").transform;
 
-        // Получаем компонент Health игрока
         if (player != null)
         {
             playerHealth = player.GetComponent<Health>();
@@ -58,15 +57,17 @@ public class BrawlStarsBotAI : MonoBehaviour
         }
 
         agent = GetComponent<NavMeshAgent>();
-
-        // Настройки агента
         agent.acceleration = 8f;
         agent.angularSpeed = 120f;
         agent.autoBraking = false;
         agent.autoRepath = true;
 
+        // Инициализация коллайдеров
         if (hitCollider != null)
             hitCollider.enabled = false;
+
+        if (detectionCollider != null)
+            detectionCollider.isTrigger = true; // Убедимся, что это триггер
 
         timer = wanderTimer;
         attackTimer = attackCooldown;
@@ -93,7 +94,17 @@ public class BrawlStarsBotAI : MonoBehaviour
         float distanceToPlayer = Vector3.Distance(transform.position, player.position);
         attackTimer -= Time.deltaTime;
 
-        if (distanceToPlayer <= attackRange && !isAttacking && attackTimer <= 0)
+        // Проверяем наличие разрушаемых объектов в радиусе атаки
+        ObjectHealth nearestDestroyable = FindNearestDestroyableInAttackRange();
+
+        // Если нашли разрушаемый объект в радиусе атаки
+        if (nearestDestroyable != null && !isAttacking && attackTimer <= 0)
+        {
+            currentDestroyableTarget = nearestDestroyable;
+            StartAttack();
+        }
+        // Иначе проверяем игрока
+        else if (distanceToPlayer <= attackRange && !isAttacking && attackTimer <= 0 && currentDestroyableTarget == null)
         {
             StartAttack();
         }
@@ -113,13 +124,68 @@ public class BrawlStarsBotAI : MonoBehaviour
             }
         }
 
-        // Если агент не двигается (например, достиг цели), сбрасываем скорость
         if (agent.velocity.magnitude < 0.1f)
         {
             animator.SetFloat("Speed", 0f);
         }
     }
+    private ObjectHealth FindNearestDestroyableInAttackRange()
+    {
+        Collider[] hitColliders = Physics.OverlapSphere(transform.position, attackRange, LayerMask.GetMask("Destroyable"));
+        ObjectHealth nearest = null;
+        float minDistance = Mathf.Infinity;
 
+        foreach (var hitCollider in hitColliders)
+        {
+            ObjectHealth objectHealth = hitCollider.GetComponent<ObjectHealth>();
+            if (objectHealth != null)
+            {
+                float distance = Vector3.Distance(transform.position, hitCollider.transform.position);
+                if (distance < minDistance)
+                {
+                    minDistance = distance;
+                    nearest = objectHealth;
+                }
+            }
+        }
+        return nearest;
+    }
+    private void OnTriggerEnter(Collider other)
+    {
+        // Обнаружение только через специальный коллайдер
+        if (detectionCollider != null && other.gameObject.layer == LayerMask.NameToLayer("Destroyable"))
+        {
+            ObjectHealth objectHealth = other.GetComponent<ObjectHealth>();
+            if (objectHealth != null)
+            {
+                currentDestroyableTarget = objectHealth;
+                // Поворачиваемся к объекту
+                transform.LookAt(new Vector3(objectHealth.transform.position.x, transform.position.y, objectHealth.transform.position.z));
+
+                // Останавливаем бота и начинаем атаку
+                agent.isStopped = true;
+                if (!isAttacking && attackTimer <= 0)
+                {
+                    StartAttack();
+                }
+            }
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (detectionCollider != null && other.gameObject.layer == LayerMask.NameToLayer("Destroyable"))
+        {
+            if (currentDestroyableTarget != null && currentDestroyableTarget.gameObject == other.gameObject)
+            {
+                currentDestroyableTarget = null;
+                if (!isAttacking)
+                {
+                    agent.isStopped = false;
+                }
+            }
+        }
+    }
     private void Wander()
     {
         if (agent.remainingDistance < 0.5f || !agent.hasPath)
@@ -137,10 +203,9 @@ public class BrawlStarsBotAI : MonoBehaviour
             }
         }
 
-        // Добавляем обновление параметров аниматора
         float currentSpeed = agent.velocity.magnitude;
         animator.SetFloat("Speed", currentSpeed);
-        animator.SetBool("Running", false); // Убедимся, что running false при блуждании
+        animator.SetBool("Running", false);
     }
 
     private void ChasePlayer(bool running)
@@ -171,32 +236,42 @@ public class BrawlStarsBotAI : MonoBehaviour
         else
             Invoke("DoDamage", attack2Delay);
 
-        
         Invoke("EndAttack", 2f);
     }
 
     private void DoDamage()
     {
-        if (isDead || playerHealth == null) return;
+        if (isDead) return;
 
-        // Проверяем расстояние до игрока и прямой видимость
-        if (Vector3.Distance(transform.position, player.position) <= attackRange * 1.2f && HasLineOfSightToPlayer())
+        if (currentDestroyableTarget != null &&
+            Vector3.Distance(transform.position, currentDestroyableTarget.transform.position) <= attackRange * 1.2f)
         {
-            // Включаем коллайдер для атаки (если используется физический урон)
             if (hitCollider != null)
             {
                 hitCollider.enabled = true;
                 Invoke("DisableHitCollider", 0.1f);
             }
 
-            // Наносим урон игроку
+            currentDestroyableTarget.TakeDamage(damage);
+            Debug.Log($"Bot attacked destroyable object for {damage} damage!");
+
+            // Сбрасываем цель сразу после удара
+            currentDestroyableTarget = null;
+        }
+        else if (playerHealth != null && Vector3.Distance(transform.position, player.position) <= attackRange * 1.2f && HasLineOfSightToPlayer())
+        {
+            if (hitCollider != null)
+            {
+                hitCollider.enabled = true;
+                Invoke("DisableHitCollider", 0.1f);
+            }
+
             playerHealth.TakeDamage(damage);
-           
-            Debug.Log($"Zombie attacked player for {damage} damage!");
+            CameraFollow.ShakeCamera(0.6f, 0.2f);
+            Debug.Log($"Bot attacked player for {damage} damage!");
         }
     }
 
-    // Проверка прямой видимости до игрока
     private bool HasLineOfSightToPlayer()
     {
         RaycastHit hit;
@@ -246,7 +321,6 @@ public class BrawlStarsBotAI : MonoBehaviour
 
     private void HandleExternalDeath()
     {
-        // Если смерть вызвана из EnemyHealth
         HandleDeath();
     }
 

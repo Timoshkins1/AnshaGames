@@ -36,6 +36,7 @@ public class PlayerShooting : MonoBehaviour
     [Header("Timing Settings")]
     public float shotDelay = 0.2f;
 
+    public Vector3 GetLastAttackDirection() => attackDirection;
     private bool isAiming = false;
     private Vector3 attackDirection;
     private int currentAmmo;
@@ -136,21 +137,33 @@ public class PlayerShooting : MonoBehaviour
         {
             isAiming = true;
             attackDirection = joystickDirection.normalized;
-           
         }
-        else if (isAiming && canShoot && currentAmmo > 0)
+        else if (isAiming && canShoot)
         {
-            if (attackType == AttackType.Ranged)
+            // Проверяем, заряжена ли ульта
+            var ultimate = GetComponent<PlayerUltimate>();
+            if (ultimate != null && ultimate.IsUltimateReady())
             {
-                PerformRangedAttack();
+                // Активируем ульту вместо обычной атаки
+                ultimate.ActivateUltimate();
+                CameraFollow.ShakeCamera(0.6f, 0.2f);
+                ultimate.ResetCharge();
             }
-            else if (attackType == AttackType.Melee)
+            else if (currentAmmo > 0) // Обычная атака
             {
-                PerformMeleeAttack();
+                if (attackType == AttackType.Ranged)
+                {
+                    PerformRangedAttack();
+                }
+                else if (attackType == AttackType.Melee)
+                {
+                    PerformMeleeAttack();
+                }
+
+                currentAmmo--;
+                UpdateAmmoDisplay();
             }
 
-            currentAmmo--;
-            UpdateAmmoDisplay();
             canShoot = false;
             isAiming = false;
         }
@@ -204,7 +217,8 @@ public class PlayerShooting : MonoBehaviour
                 attackConfig.damagePerBullet,
                 attackConfig.knockbackForce,
                 meleeDuration,
-                gameObject
+                gameObject,
+                GetComponent<PlayerUltimate>()
             );
         }
         else
@@ -273,7 +287,8 @@ public class PlayerShooting : MonoBehaviour
             attackConfig.bulletLifetime,
             attackConfig.damagePerBullet,
             attackConfig.knockbackForce,
-            gameObject
+            gameObject,
+            GetComponent<PlayerUltimate>()
         );
     }
 

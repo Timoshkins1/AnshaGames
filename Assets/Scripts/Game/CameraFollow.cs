@@ -2,6 +2,8 @@ using UnityEngine;
 
 public class CameraFollow : MonoBehaviour
 {
+    public static CameraFollow Instance { get; private set; }
+
     [Header("Settings")]
     [SerializeField] private Vector3 _positionOffset = new Vector3(2f, 3f, -4f);
     [SerializeField] private float _rotationX = 30f;
@@ -10,12 +12,21 @@ public class CameraFollow : MonoBehaviour
 
     private Transform _target;
     private Vector3 _smoothedPosition;
-    private Vector3 _originalPosition;
     private bool _isShaking = false;
     private float _shakeDuration;
     private float _shakeAmplitude;
     private float _shakeTimer;
-
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
     public void SetPlayerTransform(Transform playerTransform)
     {
         _target = playerTransform;
@@ -77,9 +88,21 @@ public class CameraFollow : MonoBehaviour
     /// </summary>
     /// <param name="amplitude">Амплитуда тряски</param>
     /// <param name="duration">Длительность тряски в секундах</param>
-    public void Shake(float amplitude, float duration)
+    public static void ShakeCamera(float amplitude, float duration)
     {
-        if (_isShaking) return; // Уже трясется
+        if (Instance != null)
+        {
+            Instance.Shake(amplitude, duration);
+        }
+        else
+        {
+            Debug.LogWarning("CameraFollow instance not found!");
+        }
+    }
+
+    private void Shake(float amplitude, float duration)
+    {
+        if (_isShaking) return;
 
         _isShaking = true;
         _shakeAmplitude = amplitude;

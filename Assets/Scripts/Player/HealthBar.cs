@@ -14,10 +14,6 @@ public class HealthBar : MonoBehaviour
 
     public void SetHealth(float health)
     {
-        if (cameraFollow != null)
-        {
-            cameraFollow.GetComponent<CameraFollow>().Shake(0.05f, 0.1f);
-        }
         slider.value = health;
     }
 }

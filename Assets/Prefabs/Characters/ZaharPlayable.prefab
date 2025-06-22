@@ -986,6 +986,7 @@ GameObject:
   - component: {fileID: 772064266027980554}
   - component: {fileID: 7041404691737664745}
   - component: {fileID: 7439789889244652339}
+  - component: {fileID: 7265740437839638724}
   m_Layer: 3
   m_Name: ZaharPlayable
   m_TagString: Player
@@ -1068,6 +1069,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   attackType: 0
   attackConfig: {fileID: 11400000, guid: 62394292f2a50a143b1059646f144703, type: 2}
+  _playerAnimation: {fileID: 0}
   firePoint: {fileID: 7188103559528356596}
   joystickDeadZone: 0.1
   targetLayer:
@@ -1207,7 +1209,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f5ab0a73db9c5a4cae2fbde1ba994a7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _animator: {fileID: 0}
   _joystick: {fileID: 0}
+  meleeAttackTriggers:
+  - MeleeAttack1
+  - MeleeAttack2
+  rangedAttackTriggers:
+  - RangedAttack1
+  - RangedAttack2
 --- !u!114 &7439789889244652339
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1222,6 +1231,27 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerSprite: {fileID: 1152612434, guid: dd584a6770e44ae4fb4f49c2d22d0955, type: 3}
   playerName: Z4har
+--- !u!114 &7265740437839638724
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3739685152691878649}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8e7c011eac83645449186e18905d956e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ultimateChargeSlider: {fileID: 0}
+  maxCharge: 10
+  joystickDeadZone: 0.3
+  ultimateBulletPrefab: {fileID: 13987118152924311, guid: 08d1e566d2244bc4eb89f488ebf24e0f, type: 3}
+  bulletSpeed: 50
+  bulletLifetime: 1
+  destroyableLayers:
+    serializedVersion: 2
+    m_Bits: 8768
 --- !u!1 &3994643088239652033
 GameObject:
   m_ObjectHideFlags: 0
@@ -1532,6 +1562,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 7962626082096265986}
+  - {fileID: 2401456514837731724}
   m_Father: {fileID: 1839947305667535601}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5021266958111402913
@@ -2094,3 +2125,79 @@ SkinnedMeshRenderer:
     m_Center: {x: 3.1076512, y: 4.0179663, z: -0.4449525}
     m_Extent: {x: 6.407409, y: 9.030019, z: 7.5688167}
   m_DirtyAABB: 0
+--- !u!1001 &2799293414356434535
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 9157596174100149130}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 3bb030de99cc5174c95294f6c96bc1e6, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1.9861336
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3bb030de99cc5174c95294f6c96bc1e6, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1.9861336
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3bb030de99cc5174c95294f6c96bc1e6, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1.9861336
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3bb030de99cc5174c95294f6c96bc1e6, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -1.3819112
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3bb030de99cc5174c95294f6c96bc1e6, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.69023466
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3bb030de99cc5174c95294f6c96bc1e6, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.16663158
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3bb030de99cc5174c95294f6c96bc1e6, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.05883797
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3bb030de99cc5174c95294f6c96bc1e6, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0.69946134
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3bb030de99cc5174c95294f6c96bc1e6, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0.7082108
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3bb030de99cc5174c95294f6c96bc1e6, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0.07569281
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3bb030de99cc5174c95294f6c96bc1e6, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: -1.427
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3bb030de99cc5174c95294f6c96bc1e6, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: -169.089
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3bb030de99cc5174c95294f6c96bc1e6, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 270.576
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 3bb030de99cc5174c95294f6c96bc1e6, type: 3}
+      propertyPath: m_Name
+      value: Silicone Gun
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects:
+    - {fileID: 65702495048144492, guid: 3bb030de99cc5174c95294f6c96bc1e6, type: 3}
+    - {fileID: -8700617353114198275, guid: 3bb030de99cc5174c95294f6c96bc1e6, type: 3}
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 3bb030de99cc5174c95294f6c96bc1e6, type: 3}
+--- !u!4 &2401456514837731724 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 3bb030de99cc5174c95294f6c96bc1e6, type: 3}
+  m_PrefabInstance: {fileID: 2799293414356434535}
+  m_PrefabAsset: {fileID: 0}

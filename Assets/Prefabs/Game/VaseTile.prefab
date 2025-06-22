@@ -49,6 +49,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 30
+  prefabsToSpawn:
+  - {fileID: 8644726444371408131, guid: 472b99e0376f7f14286a07af9aea6c62, type: 3}
+  minPrefabsToSpawn: 3
+  maxPrefabsToSpawn: 7
+  spawnForce: 5
 --- !u!65 &837394621144963610
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -100,12 +105,12 @@ NavMeshObstacle:
   m_GameObject: {fileID: 3597154973926300309}
   m_Enabled: 1
   serializedVersion: 3
-  m_Shape: 1
-  m_Extents: {x: 1.8, y: 1.605, z: 1.82}
+  m_Shape: 0
+  m_Extents: {x: 1.28, y: 2.445, z: 1.28}
   m_MoveThreshold: 0.1
-  m_Carve: 0
+  m_Carve: 1
   m_CarveOnlyStationary: 1
-  m_Center: {x: 0, y: 1.47, z: 0}
+  m_Center: {x: 0, y: 1.12, z: 0}
   m_TimeToStationary: 0.5
 --- !u!1001 &3663685893093196308
 PrefabInstance:

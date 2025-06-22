@@ -23,8 +23,8 @@ TagManager:
   - Destroyable
   - NoZombieZone
   - BaseLayer
-  - 
-  - 
+  - Bricks
+  - Decal
   - 
   - 
   - 
